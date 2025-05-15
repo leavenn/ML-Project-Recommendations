@@ -1,13 +1,18 @@
 import pandas as pd
 import numpy as np
 import tensorflow as tf
+
 from tensorflow import keras
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 import matplotlib.pyplot as plt
-    #SOPER
+
+numberOfRecommendations = 5
+
+
 # Read data from CSV to dataframe
 dataFrame = pd.read_csv('beauty_cosmetics_products.csv')
+df_display = dataFrame[['Product_Name', 'Brand', 'Category', 'Price_USD', 'Rating']].copy()
 
 
 
@@ -111,6 +116,9 @@ model.compile(
     # Mean Absolute Error (MAE) - measures the average of the absolute differences between predicted and actual values
     metrics=['mean_absolute_error']
 )
+
+model.build(input_shape=(None, X.shape[1]))
+
 # --Model learning
 history = model.fit(
     # X_train - training data
@@ -120,9 +128,9 @@ history = model.fit(
     # Validation data - used to evaluate the model during training
     # Evaluates the model on the validation data at the end of each epoch
     # helps with spotting overtraining
-    validate_data=(X_val, y_val),
+    validation_data=(X_val, y_val),
     # number of epochs - how many times to loop over the whole dataset
-    epochs=50,
+    epochs=20,
     # batch size - number of data per iteration
     # It will be trained on 8 samples at a time
     batch_size=8,
@@ -138,3 +146,65 @@ plt.xlabel('Epoch')
 plt.ylabel('Loss (MSE)')
 plt.legend()
 plt.show()
+
+# --End of model training
+
+#Scale the entire dataset minus name, rating
+# This is done to ensure that the model can be used for predictions on new data
+X_all = dataFrame.drop(columns=['Product_Name', 'Rating']).values
+X_all_scaled = scaler.transform(X_all)
+
+# Get the embeddings from the model
+# Embedding - a lower-dimensional vector representation of the input data
+# Define the function to bring up the values from the 1st layer (model.layers[1]) - Layer counting from 0 
+embedding_model = tf.keras.Model(
+    inputs=model.layers[0].input,
+    outputs=model.layers[1].output
+)
+embeddings = embedding_model.predict(X_all_scaled, batch_size=32)
+# Normalize the embeddings
+# This is done to ensure that the embeddings are on the same scale
+norms = np.linalg.norm(embeddings, axis=1, keepdims=True)
+# Embedings are divided by their norms
+# Normalization of the embedding vector 
+emb_normed = embeddings / norms
+
+# Calculate the similarity matrix
+# This is done to find the similarity between the embeddings
+# its a 2d array where each element is the dot product of the corresponding embeddings
+# The dot product of two vectors is a measure of their similarity
+#The element at position (i, j) in this matrix will contain a measure of similarity (cosine of angle) between the embedding of product i and the embedding of product j.
+sim_matrix = np.dot(emb_normed, emb_normed.T)
+
+def recommend_products(chosen_idx, sim_matrix, numberOfRecommendations):
+    # Given index of chosen product, return indices of top-k most similar.
+
+    #copy the matrix to avoid poluting the og
+    sims = sim_matrix[chosen_idx].copy()
+    # Assign -inf to itself in the matrix
+    # This is done to ensure that the product itself is not recommended
+    sims[chosen_idx] = -np.inf
+
+    # Get the indices of the top-k most similar products
+    # np.argsort - returns the indices that would sort an array
+    top_k = np.argsort(sims)[-numberOfRecommendations:][::-1]
+    return top_k
+
+# !! USER INPUT
+chosen_name = 'Ultra Face Mask'
+
+
+# Get the index of the chosen by user product
+chosen_idx = dataFrame[dataFrame['Product_Name'] == chosen_name].index[0]
+# Get top similar products
+top5_idx = recommend_products(chosen_idx, sim_matrix, numberOfRecommendations)
+
+# Format the recommendations so its easier to read
+recommendations = df_display.loc[top5_idx]  
+
+
+print(f"Recommendations for {chosen_name}:\n")
+# Print the recommendations
+print(recommendations.to_string(index=False))
+print("\n\n")
+
