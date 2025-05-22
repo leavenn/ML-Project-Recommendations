@@ -3,15 +3,29 @@ import numpy as np
 import tensorflow as tf
 
 from tensorflow import keras
+from tensorflow.keras.models import load_model
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 import matplotlib.pyplot as plt
 from collections import defaultdict
+import os
 
 # !! Config
-db_name = 'TestBase.csv' # beauty_cosmetics_products.csv
+db_name = 'beauty_cosmetics_products.csv' 
+# TestBase.csv
+# beauty_cosmetics_products.csv
 number_of_recommendations = 5
-print_graph = False;
+print_graph = True;
+test_size = 0.2
+model_units = 32
+model_epochs = 20
+save_model = True
+load_model_from_file = False
+saved_model_path = 'model.h5'
+# -- End of Config
+
+
+    
 
 
 # -- Cart
@@ -24,7 +38,7 @@ def add_to_cart(product_name):
     product_idx = dataFrame.index[dataFrame['Product_Name']==product_name][0]
     cart_counts[product_idx] = cart_counts.get(product_idx, 0) + 1
 
-def get_cart_category_weigths(cart_counts, index_to_category):
+def get_cart_category_weights(cart_counts, index_to_category):
     # if the values are nto set in the dictionary, set a default value of 0
     category_counts = defaultdict(int)
     total_count = 0
@@ -52,6 +66,7 @@ index_to_category = df_display['Category'].values
 
 
 # -- Dataset Normalization
+
 # Create a new numeric column 'Size_ml' by stripping 'ml' and casting to int
 dataFrame['Size_ml'] = dataFrame['Product_Size'].str.replace('ml', '').astype(int)
 # Drop original text column once converted
@@ -86,7 +101,7 @@ X = dataFrame.drop(columns = drop_cols).values
 
 # Split the dataset into training and testing sets
 #random_state - seed for random number generator, ensures reproducibility
-X_train,X_val, y_train,y_val = train_test_split(X, y, test_size=0.2, random_state=42)
+X_train,X_val, y_train,y_val = train_test_split(X, y, test_size = test_size, random_state=42)
 
 
 # -- Scaling
@@ -100,87 +115,102 @@ X_val = scaler.transform(X_val)
 
 
 
+# load model from file if it exists
+if os.path.exists(saved_model_path) and load_model_from_file:
+    #skip trainign if the model exist in file
+    model = load_model(saved_model_path)
+    print("Model loaded from file")
+else:
+    #-- Model
+    # Blank sequential model
+    # A sequential model is a linear stack of layers where each layer has exactly one input tensor and one output tensor.
+    model = keras.Sequential()
 
-#-- Model
-# Blank sequential model
-# A sequential model is a linear stack of layers where each layer has exactly one input tensor and one output tensor.
-model = keras.Sequential()
-
-# Add a layer to the model
-# Dense Layer - each neuron is connected to every neuron in the previous layer 
-# Layer 1
-model.add(keras.layers.Dense(
-    # number of neurons in the layer
-    units = 32, 
-    # activation function (Nonlinear)
-    # Relu - Rectified Linear Unit
-    #   f(x)=max(0,x) 
-    #   If the input (x) is POSITIVE, the output is the input itself (x).
-    #   If the input (x) is NEGATVE or ZERO, the output is zero.
-    activation='relu', 
-    # how many inputs per example
-    # Describes how many features each example in dataset has
-    input_shape=(X.shape[1],)
+    # Add a layer to the model
+    # Dense Layer - each neuron is connected to every neuron in the previous layer 
+    # Layer 1
+    model.add(keras.layers.Dense(
+        # number of neurons in the layer
+        units = model_units, 
+        # activation function (Nonlinear)
+        # Relu - Rectified Linear Unit
+        #   f(x)=max(0,x) 
+        #   If the input (x) is POSITIVE, the output is the input itself (x).
+        #   If the input (x) is NEGATVE or ZERO, the output is zero.
+        activation='relu', 
+        # how many inputs per example
+        # Describes how many features each example in dataset has
+        input_shape=(X.shape[1],)
+        )
     )
-)
-# Layer 2
-model.add(keras.layers.Dense(16, activation='relu'))
-# Going from 32 to 16 neurons means comressing the data, which leads to isolating the most important features from 31 space
+    # Layer 2
+    model.add(keras.layers.Dense(16, activation='relu'))
+    # Going from 32 to 16 neurons means comressing the data, which leads to isolating the most important features from 31 space
 
-# Output Layer
-model.add(
-    keras.layers.Dense(
-        # One neuron in the output layer
-        # because we are predicting a single value (rating)
-        units=1,
-        # no nonlinearity for regression, meaning its gonna turn itno a weighted sum of the imputs
-        #Typically used in the last layer of a regression model to get a single output value
-        activation='linear'
+    # Output Layer
+    model.add(
+        keras.layers.Dense(
+            # One neuron in the output layer
+            # because we are predicting a single value (rating)
+            units=1,
+            # no nonlinearity for regression, meaning its gonna turn itno a weighted sum of the imputs
+            #Typically used in the last layer of a regression model to get a single output value
+            activation='linear'
+        )
     )
-)
 
-# Model learning
-model.compile(
-    # Optimizer - updating the weights of the model during training based on the gradient of the loss function
-    # Adam is an optymalization algorithm
-    optimizer='adam',
-    # Loss function - measures how well the model is performing
-    # Mean Squared Error (MSE) - measures the average of the squares of the errors
-    loss='mean_squared_error',
-    # Metrics - used to evaluate the performance of the model
-    # Mean Absolute Error (MAE) - measures the average of the absolute differences between predicted and actual values
-    metrics=['mean_absolute_error']
-)
+    # Model learning
+    model.compile(
+        # Optimizer - updating the weights of the model during training based on the gradient of the loss function
+        # Adam is an optymalization algorithm
+        optimizer='adam',
+        # Loss function - measures how well the model is performing
+        # Mean Squared Error (MSE) - measures the average of the squares of the errors
+        loss='mean_squared_error',
+        # Metrics - used to evaluate the performance of the model
+        # Mean Absolute Error (MAE) - measures the average of the absolute differences between predicted and actual values
+        metrics=['mean_absolute_error']
+    )
 
-model.build(input_shape=(None, X.shape[1]))
+    model.build(input_shape=(None, X.shape[1]))
 
-# --Model learning
-history = model.fit(
-    # X_train - training data
-    X_train,
-    # y_train - training labels
-    y_train,
-    # Validation data - used to evaluate the model during training
-    # Evaluates the model on the validation data at the end of each epoch
-    # helps with spotting overtraining
-    validation_data=(X_val, y_val),
-    # number of epochs - how many times to loop over the whole dataset
-    epochs=20,
-    # batch size - number of data per iteration
-    # It will be trained on 8 samples at a time
-    batch_size=8,
-)
+    # --Model learning
+    history = model.fit(
+        # X_train - training data
+        X_train,
+        # y_train - training labels
+        y_train,
+        # Validation data - used to evaluate the model during training
+        # Evaluates the model on the validation data at the end of each epoch
+        # helps with spotting overtraining
+        validation_data=(X_val, y_val),
+        # number of epochs - how many times to loop over the whole dataset
+        epochs = model_epochs,
+        # batch size - number of data per iteration
+        # It will be trained on 8 samples at a time
+        batch_size=8,
+    )
+
+    # Graph
+    if print_graph:
+        plt.plot(history.history['loss'],label = 'train loss')
+        plt.plot(history.history['val_loss'],label = 'val loss')
+        plt.xlabel('Epoch')
+        plt.ylabel('Loss (MSE)')
+        plt.legend()
+        plt.show()
+        
+    # --End of model training
+
+
+# -- Save the model so it doesnt have to re-train
+if save_model:
+    model.save(saved_model_path)
 
 
 
-# Graph
-if print_graph:
-    plt.plot(history.history['loss'],label = 'train loss')
-    plt.plot(history.history['val_loss'],label = 'val loss')
-    plt.xlabel('Epoch')
-    plt.ylabel('Loss (MSE)')
-    plt.legend()
-    plt.show()
+
+
 
 # --End of model training
 
@@ -212,55 +242,55 @@ emb_normed = embeddings / norms
 sim_matrix = np.dot(emb_normed, emb_normed.T)
 
 
-def recommend_from_cart(embeddings, normalized_embeddings, index_to_category, cart_indices, numberOfRecommendations):
-
-    if not cart_indices:
-        return None # if cart empty, return None
-    
+def recommend_from_cart(embeddings, normalized_embeddings, index_to_category, cart_counts, numberOfRecommendations):
+    print("Log 1")
+    if not cart_counts:
+        return [] # if cart empty, return None
+    print("Log 2")
     # Get the category weights from the cart
-    category_weights = get_cart_category_weigths(cart_indices, index_to_category)
+    category_weights = get_cart_category_weights(cart_counts, index_to_category)
 
     final_recommendations = []
-    items_already_in_cart = set(cart_indices)
-
+    items_already_in_cart = set(cart_counts)
+    print("Log 3")
     for category, weight in category_weights.items():
 
         # how many recommendations for this category
         #The more products of the same category i nthe basket -> the more recommendations of that category
         recs_for_category = max(1, round(weight * numberOfRecommendations))
-
+        print("Log 3.1")
         # Get the indices of the products in the category
         total_in_category = sum(quantity for index, quantity in cart_counts.items() if index_to_category[index] == category)
-
+        print("Log 3.2")
         # build weighted sum for this category
         category_weighted_sum = np.zeros(embeddings.shape[1])
         for product_idx, quantity in cart_counts.items():
             if index_to_category[product_idx] == category:
                 category_weighted_sum += embeddings[product_idx] * quantity
-
+        print("Log 3.3")
         # Normalize the category weighted sum
         category_vector  = category_weighted_sum / total_in_category
 
         # Normalize the category vector
         category_vector = category_vector / np.linalg.norm(category_vector)
-
+        print("Log 3.4")
         # Cosine similarity
         # Calculate similarity between vec and all product embeddings
         # The dot product of two vectors is a measure of their similarity
         # produces a 1d array of vec compared to the embedding of the product
         similarity_scores = np.dot(category_vector , normalized_embeddings.T)
-
+        print("Log 3.5")
         # mask - exclude everything not in the category or already in the cart
         valid_mask = [(index_to_category[i] == category) and (i not in items_already_in_cart ) for i in range(len(similarity_scores))]
         # # set sims where mask==False to -inf setting their similarity to -inf
         similarity_scores = np.where(valid_mask, similarity_scores, -np.inf)
-
+        print("Log 3.6")
         # pick top k
         top_indices = np.argsort(similarity_scores)[-recs_for_category:][::-1]
         for recommended_idx in top_indices:
             if recommended_idx not in final_recommendations :
                 final_recommendations .append(recommended_idx)
-
+    print("Log 4")
     # if we have less than numberOfRecommendations, fill the rest with global
     if(len(final_recommendations )<numberOfRecommendations):
         
@@ -268,20 +298,20 @@ def recommend_from_cart(embeddings, normalized_embeddings, index_to_category, ca
         weighted_sum_vector = np.zeros(embeddings.shape[1])
         for product_idx, quantity in cart_counts.items():
             weighted_sum_vector += embeddings[product_idx]*quantity
-
+        print("Log 4.1")
         overall_cart_vector = weighted_sum_vector / total_items
         # Normalize the overall cart vector
         # This ensures that the overall cart vector is on the same scale as the embeddings
         overall_cart_vector = overall_cart_vector / np.linalg.norm(overall_cart_vector)
         all_similarity = np.dot(overall_cart_vector, normalized_embeddings.T)
-
+        print("Log 4.2")
         # Exclude items already in cart or already recommended
         excluded = items_already_in_cart.union(final_recommendations)
         # Set the excluded values to -inf
         # This will ensure that these items are not recommended 
         for idx in excluded:
             all_similarity[idx] = -np.inf
-
+        print("Log 4.3")
         remaining = numberOfRecommendations - len(final_recommendations )
         filler_indices = np.argsort(all_similarity)[-remaining:][::-1]
         final_recommendations.extend(filler_indices.tolist())
@@ -301,13 +331,14 @@ while True:
             product_name = dataFrame.loc[product_index, 'Product_Name']
             print(f"> {product_name} - {quantity}")
         print("\n")
-    rec_idx = recommend_from_cart(
+    recommended_indices = recommend_from_cart(
         embeddings, 
         emb_normed,
         index_to_category,
         cart_counts, 
         number_of_recommendations
         )
-    recs = df_display.loc[rec_idx]
-    print(f"Recommendations for {chosen_name}:\n",recs.to_string(index=False))
+    print (f"Recommended indices: {recommended_indices}")
+    recommendations = df_display.iloc[recommended_indices]
+    print(f"Recommendations for {chosen_name}:\n",recommendations.to_string(index=False))
     print("\n\n")
