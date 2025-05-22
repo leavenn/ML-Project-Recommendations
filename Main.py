@@ -6,7 +6,7 @@ from tensorflow import keras
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 import matplotlib.pyplot as plt
-from collections import Counter 
+from collections import defaultdict
 
 # !! Config
 db_name = 'TestBase.csv' # beauty_cosmetics_products.csv
@@ -15,23 +15,32 @@ print_graph = False;
 
 
 # -- Cart
-cart_indices=[]
+
+# map of product/how many in the cart
+cart_counts = {}
 
 def add_to_cart(product_name):
     # Find index of product_name in dataFrame and append to cart_indices.
-    idx = dataFrame.index[dataFrame['Product_Name']==product_name][0]
-    if idx not in cart_indices:
-        cart_indices.append(idx)
+    product_idx = dataFrame.index[dataFrame['Product_Name']==product_name][0]
+    cart_counts[product_idx] = cart_counts.get(product_idx, 0) + 1
 
-def get_cart_category_weigths(cart_indices, index_to_category):
-    # Returns a dictionary with category/weigth pairs
-    category_counts = Counter(index_to_category[i] for i in cart_indices)
-    total_items = sum(category_counts.values())
+def get_cart_category_weigths(cart_counts, index_to_category):
+    # if the values are nto set in the dictionary, set a default value of 0
+    category_counts = defaultdict(int)
+    total_count = 0
+
+    # Iterate each product in the cart
+    # for each product in the cart, get the category and add the quantity to the category count
+    for product_idx, quantity in cart_counts.items():
+        category = index_to_category[product_idx]
+        category_counts[category] += quantity
+        total_count += quantity
+    
     # {} makes new dictionary with category as key and count/total as value
     # for each cat (category) make a value of count / total
     # This will give us the percentage of each category in the cart
     # normalize to sum = 1.0
-    return {category: count/total_items for category, count in category_counts.items()}
+    return {category: count/total_count for category, count in category_counts.items()}
 
 # Read data from CSV to dataframe
 dataFrame = pd.read_csv(db_name)
@@ -220,12 +229,20 @@ def recommend_from_cart(embeddings, normalized_embeddings, index_to_category, ca
         #The more products of the same category i nthe basket -> the more recommendations of that category
         recs_for_category = max(1, round(weight * numberOfRecommendations))
 
-        # Get the indices of the products in the category from the cart
-        cart_items_of_category  = [idx for idx in cart_indices if index_to_category[idx] == category]
+        # Get the indices of the products in the category
+        total_in_category = sum(quantity for index, quantity in cart_counts.items() if index_to_category[index] == category)
 
-        # Normalize
-        category_vector = embeddings[cart_items_of_category ].mean(axis=0)
-        category_vector  = category_vector  / np.linalg.norm(category_vector )
+        # build weighted sum for this category
+        category_weighted_sum = np.zeros(embeddings.shape[1])
+        for product_idx, quantity in cart_counts.items():
+            if index_to_category[product_idx] == category:
+                category_weighted_sum += embeddings[product_idx] * quantity
+
+        # Normalize the category weighted sum
+        category_vector  = category_weighted_sum / total_in_category
+
+        # Normalize the category vector
+        category_vector = category_vector / np.linalg.norm(category_vector)
 
         # Cosine similarity
         # Calculate similarity between vec and all product embeddings
@@ -245,10 +262,16 @@ def recommend_from_cart(embeddings, normalized_embeddings, index_to_category, ca
                 final_recommendations .append(recommended_idx)
 
     # if we have less than numberOfRecommendations, fill the rest with global
-    #TODO: change it to similar categories - home to food, beauty to home, so on.
     if(len(final_recommendations )<numberOfRecommendations):
         
-        overall_cart_vector = embeddings[cart_indices].mean(axis=0)
+        total_items = sum(cart_counts.values())
+        weighted_sum_vector = np.zeros(embeddings.shape[1])
+        for product_idx, quantity in cart_counts.items():
+            weighted_sum_vector += embeddings[product_idx]*quantity
+
+        overall_cart_vector = weighted_sum_vector / total_items
+        # Normalize the overall cart vector
+        # This ensures that the overall cart vector is on the same scale as the embeddings
         overall_cart_vector = overall_cart_vector / np.linalg.norm(overall_cart_vector)
         all_similarity = np.dot(overall_cart_vector, normalized_embeddings.T)
 
@@ -266,7 +289,7 @@ def recommend_from_cart(embeddings, normalized_embeddings, index_to_category, ca
     return final_recommendations [:numberOfRecommendations]
 
 
-
+# -- Main loop
 while True:
     chosen_name = input("Enter the name of the product you want to add to your cart: ")
     if chosen_name in dataFrame['Product_Name'].values:
@@ -274,14 +297,15 @@ while True:
         print(f"{chosen_name} added to cart.")
         #Cart content 
         print("Cart content:")
-        for idx in cart_indices:
-            print(dataFrame.iloc[idx]['Product_Name'])
+        for product_index, quantity in cart_counts.items():
+            product_name = dataFrame.loc[product_index, 'Product_Name']
+            print(f"> {product_name} - {quantity}")
         print("\n")
     rec_idx = recommend_from_cart(
         embeddings, 
         emb_normed,
         index_to_category,
-        cart_indices, 
+        cart_counts, 
         number_of_recommendations
         )
     recs = df_display.loc[rec_idx]
