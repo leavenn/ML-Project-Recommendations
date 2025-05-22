@@ -10,7 +10,7 @@ from collections import Counter
 
 # !! Config
 db_name = 'TestBase.csv' # beauty_cosmetics_products.csv
-numberOfRecommendations = 5
+number_of_recommendations = 5
 print_graph = False;
 
 
@@ -19,22 +19,19 @@ cart_indices=[]
 
 def add_to_cart(product_name):
     # Find index of product_name in dataFrame and append to cart_indices.
-    # TODO: change to multiple iterations of the same product, make it hodl weigth - more products from one cat -> more recomendations of that category
     idx = dataFrame.index[dataFrame['Product_Name']==product_name][0]
     if idx not in cart_indices:
         cart_indices.append(idx)
 
 def get_cart_category_weigths(cart_indices, index_to_category):
-    print("Log -0")
     # Returns a dictionary with category/weigth pairs
-    counts = Counter(index_to_category[idx] for idx in cart_indices)
-    total = sum(counts.values())
-    print ("Log -1")
+    category_counts = Counter(index_to_category[i] for i in cart_indices)
+    total_items = sum(category_counts.values())
     # {} makes new dictionary with category as key and count/total as value
     # for each cat (category) make a value of count / total
     # This will give us the percentage of each category in the cart
     # normalize to sum = 1.0
-    return {cat: cnt/total for cat, cnt in counts.items()}
+    return {category: count/total_items for category, count in category_counts.items()}
 
 # Read data from CSV to dataframe
 dataFrame = pd.read_csv(db_name)
@@ -206,80 +203,68 @@ emb_normed = embeddings / norms
 sim_matrix = np.dot(emb_normed, emb_normed.T)
 
 
-def recommend_from_cart(embeddings, emb_normed, index_to_category, cart_indices, numberOfRecommendations):
-    print("Log 1")
+def recommend_from_cart(embeddings, normalized_embeddings, index_to_category, cart_indices, numberOfRecommendations):
+
     if not cart_indices:
         return None # if cart empty, return None
     
     # Get the category weights from the cart
-    cat_weigths = get_cart_category_weigths(cart_indices, index_to_category)
+    category_weights = get_cart_category_weigths(cart_indices, index_to_category)
 
-    selected = []
-    already = set(cart_indices)
-    print("Log 2")
-    for cat, weight in cat_weigths.items():
-        print("Log 2.1")
+    final_recommendations = []
+    items_already_in_cart = set(cart_indices)
+
+    for category, weight in category_weights.items():
+
         # how many recommendations for this category
         #The more products of the same category i nthe basket -> the more recommendations of that category
-        m = max(1, round(weight * numberOfRecommendations))
+        recs_for_category = max(1, round(weight * numberOfRecommendations))
 
         # Get the indices of the products in the category from the cart
-        idxs_C = [i for i in cart_indices if index_to_category[i] == cat]
+        cart_items_of_category  = [idx for idx in cart_indices if index_to_category[idx] == category]
 
         # Normalize
-        vec = embeddings[idxs_C].mean(axis=0)
-        vec = vec / np.linalg.norm(vec)
-        print("Log 2.2")
+        category_vector = embeddings[cart_items_of_category ].mean(axis=0)
+        category_vector  = category_vector  / np.linalg.norm(category_vector )
+
         # Cosine similarity
         # Calculate similarity between vec and all product embeddings
         # The dot product of two vectors is a measure of their similarity
         # produces a 1d array of vec compared to the embedding of the product
-        sims = np.dot(vec, emb_normed.T)
+        similarity_scores = np.dot(category_vector , normalized_embeddings.T)
 
         # mask - exclude everything not in the category or already in the cart
-        print("Log 2.3")
-        mask = [(index_to_category[i] == cat and i not in already) for i in range(len(sims))]
+        valid_mask = [(index_to_category[i] == category) and (i not in items_already_in_cart ) for i in range(len(similarity_scores))]
         # # set sims where mask==False to -inf setting their similarity to -inf
-        sims = np.where(mask, sims, -np.inf)
-        print("Log 2.4")
+        similarity_scores = np.where(valid_mask, similarity_scores, -np.inf)
+
         # pick top k
-        top_m = np.argsort(sims)[-m:][::-1]
-        for idx in top_m:
-            if idx not in selected:
-                selected.append(idx)
-    print("Log 3")
+        top_indices = np.argsort(similarity_scores)[-recs_for_category:][::-1]
+        for recommended_idx in top_indices:
+            if recommended_idx not in final_recommendations :
+                final_recommendations .append(recommended_idx)
+
     # if we have less than numberOfRecommendations, fill the rest with global
     #TODO: change it to similar categories - home to food, beauty to home, so on.
-    if(len(selected)<numberOfRecommendations):
+    if(len(final_recommendations )<numberOfRecommendations):
         
-        global_sims = embeddings[cart_indices].mean(axis=0)
-        global_sims = global_sims / np.linalg.norm(global_sims)
-        sims_global = np.dot(global_sims, emb_normed.T)
-        needed = numberOfRecommendations - len(selected)
-        fill = np.argsort(sims_global)[-needed:][::-1]
-        selected.extend(fill.tolist())
-    print("Log 4")
-    return selected[:numberOfRecommendations]
+        overall_cart_vector = embeddings[cart_indices].mean(axis=0)
+        overall_cart_vector = overall_cart_vector / np.linalg.norm(overall_cart_vector)
+        all_similarity = np.dot(overall_cart_vector, normalized_embeddings.T)
 
+        # Exclude items already in cart or already recommended
+        excluded = items_already_in_cart.union(final_recommendations)
+        # Set the excluded values to -inf
+        # This will ensure that these items are not recommended 
+        for idx in excluded:
+            all_similarity[idx] = -np.inf
 
-    # cart_vector = embeddings[cart_indices].mean(axis=0)
-    # # Normalize cart_vector
-    # cart_vector = cart_vector / np.linalg.norm(cart_vector)
-    # # Calculate similarity between cart_vector and all product embeddings
-    # sims = np.dot(cart_vector, emb_normed.T)
-   
-    # #Determine categories present in cart
-    # cart_cats = set(index_to_category[cart_indices])
+        remaining = numberOfRecommendations - len(final_recommendations )
+        filler_indices = np.argsort(all_similarity)[-remaining:][::-1]
+        final_recommendations.extend(filler_indices.tolist())
 
-    # # Exclude out everything not in those categories or already in cart
-    # mask = np.array([ (idx not in cart_indices) and (index_to_category[idx] in cart_cats) for idx in range(len(sims))])
+    return final_recommendations [:numberOfRecommendations]
 
-    # # set sims where mask==False to -inf setting their similarity to -inf
-    # sims[~mask] = -np.inf
-
-    # #Sort ascending and get the last 5, ::-1 - swap their order (from 1,2,3 to 3,2,1) so the most recomended is printed first
-    # top_k = np.argsort(sims)[-numberOfRecommendations:][::-1]
-    # return top_k
 
 
 while True:
@@ -297,7 +282,7 @@ while True:
         emb_normed,
         index_to_category,
         cart_indices, 
-        numberOfRecommendations
+        number_of_recommendations
         )
     recs = df_display.loc[rec_idx]
     print(f"Recommendations for {chosen_name}:\n",recs.to_string(index=False))
