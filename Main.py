@@ -57,11 +57,16 @@ def get_cart_category_weights(cart_counts, index_to_category):
     # normalize to sum = 1.0
     return {category: count/total_count for category, count in category_counts.items()}
 
+# -- End of Cart
+
+# -- Read data
 # Read data from CSV to dataframe
 dataFrame = pd.read_csv(db_name)
+
 df_display = dataFrame[['Product_Name', 'Brand', 'Category', 'Price_USD', 'Rating']].copy()
 
 # build an array of original categories, one per product index
+# This will be used to map indices to categories later and to display recommendations in the final output
 index_to_category = df_display['Category'].values
 
 
@@ -145,23 +150,27 @@ else:
         )
     )
 
+    # Layer 2
     # Dropout Layer - randomly sets a fraction of input units to 0 at each update during training time, which helps prevent overfitting
     model.add(keras.layers.Dropout(0.3))
 
-    # Layer 2
-    model.add(keras.layers.Dense(16, activation='relu'))
-    # Going from 32 to 16 neurons means comressing the data, which leads to isolating the most important features from 31 space
-
-    #Dropout layer
-    model.add(keras.layers.Dropout(0.3))
-
     # Layer 3
-    model.add(keras.layers.Dense(8, activation='relu'))
-
-    #Dropout layer
-    model.add(keras.layers.Dropout(0.3))
+    model.add(keras.layers.Dense(16, activation='relu'))
+    # Going from 32 to 16 neurons means comressing the data, which leads to isolating the most important features
 
     # Layer 4
+    #Dropout layer
+    model.add(keras.layers.Dropout(0.3))
+
+    # Layer 5
+    model.add(keras.layers.Dense(8, activation='relu'))
+
+    # Layer 6
+    #Dropout layer
+    model.add(keras.layers.Dropout(0.3))
+
+    # Layer 7 - Final Layer
+    # This layer is the bottleneck layer, which compresses the data to a lower dimension
     # Output Layer
     model.add(
         keras.layers.Dense(
@@ -219,16 +228,23 @@ else:
         # batch size - number of data per iteration
         # It will be trained on 8 samples at a time
         batch_size=8,
-        #Early stopping callback
+        # Early stopping callback
         # This will stop the training if the validation loss does not improve for 3 epochs
         callbacks= [early_stop, reduce_lr],
     )
 
     # Graph
     if print_graph:
+        # This is a measure of the model error on the training data. 
+        # It is calculated based on how much the model predictions differ from the actual labels in the training set.
         plt.plot(history.history['loss'],label = 'train loss')
+        # It is a measure of the model error on the validation set. 
+        # The validation set is a part of the data that is not used to train the model, but is used to evaluate its performance during training. 
+        # Validation loss gives us insight into how well the model generalizes to new, unseen data.
         plt.plot(history.history['val_loss'],label = 'val loss')
+        # x-axis - number of epochs
         plt.xlabel('Epoch')
+        # y-axis - loss value
         plt.ylabel('Loss (MSE)')
         plt.legend()
         plt.show()
@@ -236,14 +252,9 @@ else:
     # --End of model training
 
 
-# -- Save the model so it doesnt have to re-train
+# -- Save the model so it doesnt have to re-train (Test only)
 if save_model:
     model.save(saved_model_path)
-
-
-
-
-
 
 # --End of model training
 
@@ -257,7 +268,7 @@ X_all_scaled = scaler.transform(X_all)
 # Define the function to bring up the values from the 1st layer (model.layers[1]) - Layer counting from 0 
 embedding_model = tf.keras.Model(
     inputs=model.layers[0].input,
-    outputs=model.layers[1].output
+    outputs=model.layers[6].output
 )
 embeddings = embedding_model.predict(X_all_scaled, batch_size=32)
 # Normalize the embeddings
@@ -292,6 +303,8 @@ def recommend_from_cart(embeddings, normalized_embeddings, index_to_category, ca
         total_in_category = sum(quantity for index, quantity in cart_counts.items() if index_to_category[index] == category)
         # build weighted sum for this category
         category_weighted_sum = np.zeros(embeddings.shape[1])
+        # Iterate through the cart counts and multiply each embedding by its quantity
+        # This will give us a vector that represents the category
         for product_idx, quantity in cart_counts.items():
             if index_to_category[product_idx] == category:
                 category_weighted_sum += embeddings[product_idx] * quantity
@@ -307,24 +320,33 @@ def recommend_from_cart(embeddings, normalized_embeddings, index_to_category, ca
         similarity_scores = np.dot(category_vector , normalized_embeddings.T)
         # mask - exclude everything not in the category or already in the cart
         valid_mask = [(index_to_category[i] == category) and (i not in items_already_in_cart ) for i in range(len(similarity_scores))]
-        # # set sims where mask==False to -inf setting their similarity to -inf
+        # set sims where mask==False to -inf setting their similarity to -inf so theyre never recommended
         similarity_scores = np.where(valid_mask, similarity_scores, -np.inf)
         # pick top k
         top_indices = np.argsort(similarity_scores)[-recs_for_category:][::-1]
+        # Append the top indices to the final recommendations
         for recommended_idx in top_indices:
             if recommended_idx not in final_recommendations :
                 final_recommendations .append(recommended_idx)
     # if we have less than numberOfRecommendations, fill the rest with global
     if(len(final_recommendations )<numberOfRecommendations):
-        
+        # Sum of items in the cart
         total_items = sum(cart_counts.values())
+        # Calculate the overall cart vector
+        # This is a weighted sum of the embeddings of the products in the cart
         weighted_sum_vector = np.zeros(embeddings.shape[1])
+        # Iterate through the cart counts and multiply each embedding by its quantity
+        # This will give us a vector that represents the overall cart
         for product_idx, quantity in cart_counts.items():
             weighted_sum_vector += embeddings[product_idx]*quantity
+        # Divide the weighted sum vector by the total number of items in the cart
+        # This will give us the average vector of the cart
         overall_cart_vector = weighted_sum_vector / total_items
         # Normalize the overall cart vector
         # This ensures that the overall cart vector is on the same scale as the embeddings
         overall_cart_vector = overall_cart_vector / np.linalg.norm(overall_cart_vector)
+        # Calculate the similarity between the overall cart vector and all product embeddings
+        # This will give us a 1d array of similarity scores between the overall cart vector and all product embeddings
         all_similarity = np.dot(overall_cart_vector, normalized_embeddings.T)
         # Exclude items already in cart or already recommended
         excluded = items_already_in_cart.union(final_recommendations)
@@ -332,8 +354,14 @@ def recommend_from_cart(embeddings, normalized_embeddings, index_to_category, ca
         # This will ensure that these items are not recommended 
         for idx in excluded:
             all_similarity[idx] = -np.inf
+        # How many recommendations are still needed
+        # If we have less than numberOfRecommendations, we need to fill the rest with global recommendations
         remaining = numberOfRecommendations - len(final_recommendations )
+        # Get the indices of the top remaining recommendations based on similarity
+        # We sort the similarity scores in descending order and take the top remaining indices (diferent category, just with similar vectors)
         filler_indices = np.argsort(all_similarity)[-remaining:][::-1]
+        # Append the filler indices to the final recommendations
+        # This will ensure that we have the required number of recommendations
         final_recommendations.extend(filler_indices.tolist())
 
     return final_recommendations [:numberOfRecommendations]
