@@ -21,7 +21,7 @@ print_graph = True;
 test_size = 0.2
 model_epochs = 20
 save_model = True
-load_model_from_file = True
+load_model_from_file = False
 saved_model_path = 'model.h5'
 # -- End of Config
 
