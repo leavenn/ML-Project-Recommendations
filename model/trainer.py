@@ -1,65 +1,79 @@
-from data.loader import load_and_preprocess_data
-from model.trainer import build_or_load_model
-from model.recommender import recommend_from_cart
-from cart.cart_logic import add_to_cart, print_cart
+import os
+import tensorflow as tf
+import matplotlib.pyplot as plt
+import joblib
 
-print("Loading app.py...")
+from model.embedder import get_embeddings
+from utils.io_utils import save_full_model, load_full_model
 
-# Number of product recommendations to return
-NUMBER_OF_RECOMMENDATIONS = 5
+def plot_history(history_data):
+    plt.figure(figsize=(8, 5))
+    plt.plot(history_data['loss'], label='Train Loss')
+    if 'val_loss' in history_data:
+        plt.plot(history_data['val_loss'], label='Val Loss')
+    plt.legend()
+    plt.title("Training vs Validation Loss")
+    plt.xlabel("Epoch")
+    plt.ylabel("Loss")
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()
 
-# Path to saved model
-MODEL_PATH = "model/model.keras"
+def build_or_load_model(X, y, model_path="model/model.keras"):
+    folder = "model"
+    embeddings_path = os.path.join(folder, "embeddings.pkl")
+    emb_normed_path = os.path.join(folder, "emb_normed.pkl")
+    scaler_path = os.path.join(folder, "scaler.pkl")
+    history_path = os.path.join(folder, "history.pkl")
 
-# Load and preprocess the dataset
-df_display, dataFrame, index_to_category, X_all_scaled, scaler = load_and_preprocess_data()
+    if all(os.path.exists(p) for p in [model_path, embeddings_path, emb_normed_path, scaler_path]):
+        model, embeddings, emb_normed, scaler = load_full_model(folder=folder)
+        print("Załadowano model i embeddings ze ścieżek")
 
-# Build or load the model and its embeddings
-model, embeddings, emb_normed = build_or_load_model(X_all_scaled, dataFrame['Rating'].values, MODEL_PATH)
+        # Pokaż wykres z zapisanej historii, jeśli istnieje
+        if os.path.exists(history_path):
+            history_data = joblib.load(history_path)
+            print("Pokazuję zapisany wykres strat...")
+            plot_history(history_data)
+        else:
+            print("Nie znaleziono pliku z historią. Tworzę pusty wykres.")
+            plot_history({'loss': [], 'val_loss': []})
 
-# Initialize cart dictionary to store selected products
-cart_counts = {}
-
-# Display list of all available products
-print("Available products:")
-for i, product in enumerate(dataFrame['Product_Name'].values, 1):
-    print(f"{i}. {product}")
-
-# Prepare lowercase version of product names for easier lookup
-product_names_lower = [p.lower() for p in dataFrame['Product_Name'].values]
-
-# Main loop for user interaction
-while True:
-    # Ask user to input product name
-    chosen_name = input("Enter product to add to cart: ").strip()
-    chosen_name_lower = chosen_name.lower()
-
-    # Check if the product exists (case-insensitive)
-    if chosen_name_lower in product_names_lower:
-        # Retrieve original name with correct capitalization
-        original_name = dataFrame['Product_Name'].values[product_names_lower.index(chosen_name_lower)]
-
-        # Add product to cart
-        add_to_cart(original_name, cart_counts, dataFrame)
-
-        # Print current contents of the cart
-        print_cart(cart_counts, dataFrame)
     else:
-        # Notify user if the product doesn't exist
-        print(f"Product '{chosen_name}' does not exist in the database. Please try again.\n")
-        continue
+        print("Trening nowego modelu...")
+        model = tf.keras.Sequential([
+            tf.keras.layers.Input(shape=(X.shape[1],)),
+            tf.keras.layers.Dense(32, activation='relu'),
+            tf.keras.layers.Dropout(0.3),
+            tf.keras.layers.Dense(16, activation='relu'),
+            tf.keras.layers.Dropout(0.3),
+            tf.keras.layers.Dense(8, activation='relu'),
+            tf.keras.layers.Dropout(0.3),
+            tf.keras.layers.Dense(1, activation='linear')
+        ])
+        model.compile(optimizer='adam', loss='mse', metrics=['mae'])
 
-    # Get product recommendations based on current cart contents
-    recommended_indices = recommend_from_cart(
-        embeddings,
-        emb_normed,
-        index_to_category,
-        cart_counts,
-        NUMBER_OF_RECOMMENDATIONS
-    )
+        history = model.fit(
+            X, y,
+            validation_split=0.2,
+            epochs=20,
+            batch_size=8,
+            callbacks=[
+                tf.keras.callbacks.EarlyStopping(patience=3, restore_best_weights=True),
+                tf.keras.callbacks.ReduceLROnPlateau(factor=0.5, patience=3, min_lr=1e-6)
+            ]
+        )
 
-    # Display recommended products to the user
-    print("Recommended products:")
-    print(df_display.iloc[recommended_indices].to_string(index=False))
-    print("\n")
+        # Zapis historii do pliku
+        joblib.dump(history.history, history_path)
 
+        # Wykres na świeżo
+        plot_history(history.history)
+
+        embeddings, emb_normed = get_embeddings(model, X)
+        scaler = None  # Podmień jeśli używasz scalera
+
+        save_full_model(model, embeddings, emb_normed, scaler, folder=folder)
+        print("Model i embeddings wytrenowane i zapisane")
+
+    return model, embeddings, emb_normed

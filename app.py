@@ -3,7 +3,7 @@ from model.trainer import build_or_load_model
 from model.recommender import recommend_from_cart
 from cart.cart_logic import add_to_cart, print_cart
 
-print("Loading app.py...")
+print("🚀 Loading app.py...")
 
 # Number of recommendations to be generated
 NUMBER_OF_RECOMMENDATIONS = 5
@@ -21,9 +21,9 @@ model, embeddings, emb_normed = build_or_load_model(X_all_scaled, dataFrame['Rat
 cart_counts = {}
 
 # Display all available products to the user
-print("Available products:")
+print("\n🛍️  Available products:")
 for i, product in enumerate(dataFrame['Product_Name'].values, 1):
-    print(f"{i}. {product}")
+    print(f"{i:3}. {product}")
 
 # Create a lowercase version of all product names to simplify lookup
 product_names_lower = [p.lower() for p in dataFrame['Product_Name'].values]
@@ -31,7 +31,7 @@ product_names_lower = [p.lower() for p in dataFrame['Product_Name'].values]
 # Infinite loop for user interaction
 while True:
     # Prompt user for input
-    chosen_name = input("Enter product to add to cart: ").strip()
+    chosen_name = input("\n🛒 Enter product to add to cart: ").strip()
     chosen_name_lower = chosen_name.lower()
 
     # If product exists in the dataset
@@ -46,7 +46,7 @@ while True:
         print_cart(cart_counts, dataFrame)
     else:
         # Product not found, show error and prompt again
-        print(f"Product '{chosen_name}' does not exist in the database. Please try again.\n")
+        print(f"❌ Product '{chosen_name}' does not exist in the database. Please try again.")
         continue  # Skip to next iteration
 
     # Generate product recommendations based on current cart
@@ -59,8 +59,6 @@ while True:
     )
 
     # Display recommended products nicely
-    print("Recommended products:")
+    print("\n✨ Recommended products:")
     print(df_display.iloc[recommended_indices].to_string(index=False))
-    print("\n")
-
-
+    print("\n----------------------------------------")

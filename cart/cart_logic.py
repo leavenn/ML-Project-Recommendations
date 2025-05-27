@@ -40,15 +40,24 @@ def get_cart_category_weights(cart_counts, index_to_category):
 
 def print_cart(cart_counts, dataFrame):
     """
-    Prints the current contents of the cart.
+    Prints the current contents of the cart in a nicely formatted way.
 
     Parameters:
         cart_counts (dict): Dictionary of cart contents (product index -> quantity).
         dataFrame (DataFrame): The full product data including product names.
     """
-    print("Cart:")
-    for idx, qty in cart_counts.items():
-        # Display product name and quantity
-        print(f"> {dataFrame.loc[idx, 'Product_Name']} - {qty}")
+    if not cart_counts:
+        print("\nYour cart is empty.\n")
+        return
+    
+    print("\n🛒 Your cart contains:")
+    print("-" * 40)
+    total_items = 0
+    for i, (idx, qty) in enumerate(cart_counts.items(), start=1):
+        product_name = dataFrame.loc[idx, 'Product_Name']
+        print(f"{i:2}. {product_name:<30} x {qty}")
+        total_items += qty
+    print("-" * 40)
+    print(f"Total items in cart: {total_items}\n")
 
 
