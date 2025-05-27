@@ -2,7 +2,7 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
-def load_and_preprocess_data(db_name="data/beauty_cosmetics_products.csv", test_size=0.2):
+def load_and_preprocess_data(db_name="data/Book3.csv", test_size=0.2):
     # Load the dataset from a CSV file
     dataFrame = pd.read_csv(db_name)
 

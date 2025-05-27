@@ -21,12 +21,12 @@ model, embeddings, emb_normed = build_or_load_model(X_all_scaled, dataFrame['Rat
 cart_counts = {}
 
 # Display all available products to the user
-print("\n🛍️  Available products:")
-for i, product in enumerate(dataFrame['Product_Name'].values, 1):
-    print(f"{i:3}. {product}")
+#print("\n🛍️  Available products:")
+#for i, product in enumerate(dataFrame['Product_Name'].values, 1):
+#    print(f"{i:3}. {product}")
 
 # Create a lowercase version of all product names to simplify lookup
-product_names_lower = [p.lower() for p in dataFrame['Product_Name'].values]
+product_names_lower = [str(p).lower() for p in dataFrame['Product_Name'].values]
 
 # Infinite loop for user interaction
 while True:
