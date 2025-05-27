@@ -1,0 +1,57 @@
+# Wirtualne środowiska
+venv/
+.env/
+.venv/
+
+# Pliki konfiguracyjne edytorów
+.vscode/
+.idea/
+
+# Pliki i foldery systemowe
+__pycache__/
+*.py[cod]
+*.so
+*.dll
+*.dylib
+
+# Pliki logów i baz danych
+*.log
+*.sqlite3
+
+# Notatniki Jupyter
+.ipynb_checkpoints/
+
+# Pliki modeli ML / wyniki
+model/
+*.h5
+*.hdf5
+*.keras
+*.pkl
+*.joblib
+*.ckpt
+*.pb
+*.tflite
+*.onnx
+
+# Dane użytkownika / prywatne dane
+data/*.json
+data/*.xlsx
+
+# Zrzuty ekranów, obrazy tymczasowe itp.
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.bmp
+*.svg
+
+# Kompilacje C/C++
+*.out
+*.o
+*.a
+*.exe
+
+# Backupy
+*~
+*.bak
+*.tmp
