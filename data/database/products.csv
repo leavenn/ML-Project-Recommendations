@@ -1,4 +1,4 @@
-﻿Column1,Brand,Category,Usage_Frequency,Price_USD,Rating,Number_of_Reviews,Product_Size,Skin_Type,Gender_Target,Packaging_Type,Main_Ingredient,Cruelty_Free,Country_of_Origin,ID
+﻿Product_Name,Brand,Category,Usage_Frequency,Price_USD,Rating,Number_of_Reviews,Product_Size,Skin_Type,Gender_Target,Packaging_Type,Main_Ingredient,Cruelty_Free,Country_of_Origin,ID
 Ultra Lip Gloss,RMS Beauty,Lipstick,Daily,139.83,5.0,3681,100ml,Sensitive,Female,Jar,Retinol,TRUE,Germany,1
 Ultra Lip Gloss,Perricone MD,Lipstick,Weekly,107.54,5.0,9915,150ml,Dry,Unisex,Spray,Salicylic Acid,TRUE,France,2
 Perfect Powder,IT Cosmetics,Lipstick,Occasional,139.28,5.0,6896,150ml,Sensitive,Female,Jar,Salicylic Acid,FALSE,USA,3

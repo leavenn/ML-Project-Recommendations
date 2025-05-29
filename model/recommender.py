@@ -1,70 +1,34 @@
 import numpy as np
-from cart.cart_logic import get_cart_category_weights
+from sklearn.metrics.pairwise import cosine_similarity
 
-def recommend_from_cart(embeddings, normalized_embeddings, index_to_category, cart_counts, numberOfRecommendations):
-    # If the cart is empty, return no recommendations
-    if not cart_counts:
-        return []
+def get_product_indices_by_ids(df, product_ids, id_col="ID"):
+    print(f"Szukanie produktów o ID: {product_ids} w kolumnie '{id_col}'")
+    print("Dostępne ID w dataFrame:", df["ID"].tolist()[:10])  # pokaż tylko pierwsze 10
+    print("Typ kolumny ID:", df["ID"].dtype)
 
-    in_cart = set(cart_counts)  # Indices of products already in cart
-    category_weights = get_cart_category_weights(cart_counts, index_to_category)  # Get weights for each category
-    final_recommendations = []
+    if isinstance(product_ids, (int, str)):
+        product_ids = [product_ids]
+    indices = df[df[id_col].isin(product_ids)].index.tolist()
+    if not indices:
+        raise ValueError("Żaden z podanych ID nie został znaleziony.")
+    return indices
 
-    # Precompute arrays for faster access
-    indices = np.array(list(cart_counts.keys()))  # Product indices in the cart
-    quantities = np.array(list(cart_counts.values()))  # Corresponding quantities
-    categories = np.array([index_to_category[i] for i in indices])  # Categories of products in the cart
+def get_mean_embedding(embeddings_normed, indices):
+    return np.mean(embeddings_normed[indices], axis=0).reshape(1, -1)
 
-    # Loop through each product category in the cart
-    for category, weight in category_weights.items():
-        # Calculate how many products to recommend from this category
-        recs = max(1, round(weight * numberOfRecommendations))
+def recommend_similar_products(df, embeddings_normed, product_ids, id_col="ID", top_n=5):
+    indices = get_product_indices_by_ids(df, product_ids, id_col)
+    query_embedding = get_mean_embedding(embeddings_normed, indices)
 
-        # Filter cart products that belong to this category
-        mask = categories == category
-        cat_indices = indices[mask]
-        cat_quantities = quantities[mask]
+    similarities = cosine_similarity(query_embedding, embeddings_normed).flatten()
+    sorted_indices = np.argsort(-similarities)
 
-        if len(cat_indices) == 0:
-            continue  # Skip if no items from this category
+    # Pomiń produkty wejściowe
+    filtered_indices = [i for i in sorted_indices if i not in indices][:top_n]
 
-        # Compute the weighted average embedding for this category
-        total_cat = cat_quantities.sum()
-        vec = np.sum(embeddings[cat_indices] * cat_quantities[:, None], axis=0) / total_cat
-        vec /= np.linalg.norm(vec)  # Normalize the vector
+    recommended_df = df.iloc[filtered_indices].copy()
+    recommended_df["similarity"] = similarities[filtered_indices]
+    return recommended_df
 
-        # Compute cosine similarity between the category vector and all product embeddings
-        sim = normalized_embeddings @ vec
-
-        # Mask out products that are not in this category or already in the cart
-        mask_sim = np.array([index_to_category[i] == category and i not in in_cart for i in range(len(sim))])
-        sim = np.where(mask_sim, sim, -np.inf)  # Assign -inf similarity to masked items
-
-        # Select top N most similar products for this category
-        top = np.argpartition(sim, -recs)[-recs:]
-        top_sorted = top[np.argsort(sim[top])[::-1]]
-
-        for i in top_sorted:
-            if i not in final_recommendations:
-                final_recommendations.append(i)
-
-    # If fewer recommendations were found than requested, fill in with global similarity
-    if len(final_recommendations) < numberOfRecommendations:
-        # Compute a global weighted embedding vector from all cart items
-        total = quantities.sum()
-        vec = np.sum(embeddings[indices] * quantities[:, None], axis=0) / total
-        vec /= np.linalg.norm(vec)
-
-        sim = normalized_embeddings @ vec
-        excluded = in_cart.union(final_recommendations)  # Avoid duplicates and cart items
-        sim[list(excluded)] = -np.inf
-
-        # Get additional recommendations to meet the required count
-        filler_count = numberOfRecommendations - len(final_recommendations)
-        filler = np.argpartition(sim, -filler_count)[-filler_count:]
-        filler_sorted = filler[np.argsort(sim[filler])[::-1]]
-        final_recommendations.extend(filler_sorted)
-
-    return final_recommendations[:numberOfRecommendations]
 
 

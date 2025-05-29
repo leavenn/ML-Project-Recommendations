@@ -1,21 +1,24 @@
 import numpy as np
+from sklearn.preprocessing import normalize
 import tensorflow as tf
 
-def get_embeddings(model, X_scaled):
-    # Create a sub-model that outputs the values from the penultimate layer (assumed to be embeddings)
-    # model.layers[0].input: the input layer
-    # model.layers[6].output: output of the 7th layer (zero-indexed)
-    embedding_model = tf.keras.Model(inputs=model.layers[0].input, outputs=model.layers[6].output)
+def get_embeddings(model, X):
+    """
+    Tworzy nowy model, który kończy się na warstwie 'embedding',
+    a następnie generuje embeddingi dla X.
+    Zwraca również wersję znormalizowaną (L2).
+    """
+    # Znajdź warstwę embedding po nazwie
+    embedding_layer = model.get_layer("embedding")
 
-    # Generate the embeddings for all input data
-    embeddings = embedding_model.predict(X_scaled, batch_size=32)
+    # Utwórz nowy model od wejścia do tej warstwy
+    embedding_model = tf.keras.Model(inputs=model.input, outputs=embedding_layer.output)
 
-    # Compute the L2 norm (Euclidean norm) of each embedding vector
-    norms = np.linalg.norm(embeddings, axis=1, keepdims=True)
+    # Oblicz embeddingi
+    embeddings = embedding_model.predict(X)
 
-    # Normalize embeddings to have unit length (important for cosine similarity)
-    emb_normed = embeddings / norms
+    # Normalizuj do długości 1 (L2 norm) – przydatne do porównań kosinusowych
+    embeddings_normalized = normalize(embeddings)
 
-    # Return both raw and normalized embeddings
-    return embeddings, emb_normed
+    return embeddings, embeddings_normalized
 
