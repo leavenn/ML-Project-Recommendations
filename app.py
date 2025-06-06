@@ -1,7 +1,7 @@
 import json
 from data.loader import load_and_preprocess_data
 from model.trainer import build_or_load_autoencoder_model
-from model.recommender import recommend_similar_products
+from model.recommender import plot_similar_products, recommend_similar_products
 from cart.cart_logic import add_to_cart_by_id, print_cart
 
 print("🚀 Loading app.py...")
@@ -51,4 +51,9 @@ while True:
 
     print("\n✨ Proponowane produkty:")
     print(recommended_df[['Product_Name', 'Brand', 'Category', 'Price_USD', 'Rating', 'similarity']])
+    
+    # Rysuj wykres podobieństw
+    plot_similar_products(recommended_df, title="🔎 Rekomendacje podobne do produktów w koszyku")
+
+    
 

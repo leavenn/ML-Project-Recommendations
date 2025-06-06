@@ -22,12 +22,13 @@
     "autoencoder_file": "model/model_data/model.keras",
     "embeddings": "model/model_data/embeddings.npy",
     "normalized_embeddings": "model/model_data/embeddings_normed.npy",
-    "training_history": "model/model_data/training_history.json"
+    "training_history": "model/model_data/training_history.json",
+    "training_history_plot": "model/model_data/training_history_plot.png"
   },
   "output_paths": {
     "charts_dir": "outputs/plots/",
     "logs_dir": "outputs/logs/",
     "recommendations_dir": "outputs/recommendations/"
   },
-  "number_of_recommendations": 10
+  "number_of_recommendations": 20
 }

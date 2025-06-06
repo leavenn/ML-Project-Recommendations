@@ -1,10 +1,25 @@
+from matplotlib import pyplot as plt
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 
+def plot_similar_products(recommended_df, title="Top podobne produkty"):
+    if recommended_df.empty:
+        print("Brak danych do wykresu.")
+        return
+
+    names = recommended_df["Product_Name"] if "Product_Name" in recommended_df.columns else recommended_df.index.astype(str)
+    scores = recommended_df["similarity"]
+
+    plt.figure(figsize=(8, 5))
+    plt.barh(names, scores, color='skyblue')
+    plt.xlabel("Podobieństwo (cosine)")
+    plt.title(title)
+    plt.gca().invert_yaxis()  # Najbardziej podobny u góry
+    plt.grid(True, axis='x', linestyle='--', alpha=0.6)
+    plt.tight_layout()
+    plt.show()
+
 def get_product_indices_by_ids(df, product_ids, id_col="ID"):
-    print(f"Szukanie produktów o ID: {product_ids} w kolumnie '{id_col}'")
-    print("Dostępne ID w dataFrame:", df["ID"].tolist()[:10])  # pokaż tylko pierwsze 10
-    print("Typ kolumny ID:", df["ID"].dtype)
 
     if isinstance(product_ids, (int, str)):
         product_ids = [product_ids]

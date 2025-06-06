@@ -1,5 +1,6 @@
 import os
 import joblib
+from matplotlib import pyplot as plt
 import tensorflow as tf
 from model.embedder import get_embeddings
 from utils.io_utils import save_full_model, load_full_model
@@ -19,14 +20,14 @@ def build_or_load_autoencoder_model(X, model_paths):
         encoding_dim = 8        # wymiar wewnętrzny (embedding)
 
         input_layer = tf.keras.layers.Input(shape=(input_dim,))
-        encoded = tf.keras.layers.Dense(32, activation='relu')(input_layer)
-        encoded = tf.keras.layers.Dense(16, activation='relu')(encoded)
+        encoded = tf.keras.layers.Dense(16, activation='relu')(input_layer)
+        encoded = tf.keras.layers.Dense(8, activation='relu')(encoded)
         embedding = tf.keras.layers.Dense(encoding_dim, activation='relu', name="embedding")(encoded)
 
-        decoded = tf.keras.layers.Dense(16, activation='relu')(embedding)
-        decoded = tf.keras.layers.Dense(32, activation='relu')(decoded)
+        decoded = tf.keras.layers.Dense(8, activation='relu')(embedding)
+        decoded = tf.keras.layers.Dense(16, activation='relu')(decoded)
         output_layer = tf.keras.layers.Dense(input_dim, activation='linear')(decoded)
-
+        
         autoencoder = tf.keras.Model(inputs=input_layer, outputs=output_layer)
         autoencoder.compile(optimizer='adam', loss='mse')
 
@@ -41,6 +42,20 @@ def build_or_load_autoencoder_model(X, model_paths):
                 tf.keras.callbacks.ReduceLROnPlateau(factor=0.5, patience=2, min_lr=1e-6)
             ]
         )
+
+        # Rysuj wykres błędów
+        plt.figure(figsize=(10, 6))
+        plt.plot(history.history['loss'], label='Train Loss')
+        plt.plot(history.history['val_loss'], label='Validation Loss')
+        plt.title('Autoencoder Training Loss')
+        plt.xlabel('Epoch')
+        plt.ylabel('MSE Loss')
+        plt.legend()
+        plt.grid(True)
+
+        # Zapisz wykres do pliku (np. PNG)
+        plt.savefig(model_paths['training_history_plot'])  # np. 'autoencoder_loss_plot.png'
+        plt.close()
 
         # Zapisz historię treningu
         joblib.dump(history.history, model_paths['training_history'])
