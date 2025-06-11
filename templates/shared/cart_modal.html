@@ -1,0 +1,25 @@
+<div id="cartModal" class="cart-modal-container">
+    <div class="cart-modal-content">
+        <button class="close-button" onclick="closeCartModal()">&times;</button>
+        <h2>Shopping Bag</h2>
+        <div id="modalCartMessage" class="message info" style="display: none;">Your basket is empty.</div>
+        <div class="cart-modal-body">
+            <table id="modalCartTable">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Price</th>
+                        <th>Quantity</th>
+                        <th>Total</th>
+                        <th></th> </tr>
+                </thead>
+                <tbody>
+                    </tbody>
+            </table>
+        </div>
+        <div class="button-group modal-buttons">
+            <a href="{{ url_for('basket_page') }}" class="primary-btn">View full basket</a>
+            <button class="reset-btn" onclick="confirmResetCart()">Clear Basket</button>
+        </div>
+    </div>
+</div>

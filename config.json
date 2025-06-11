@@ -1,0 +1,35 @@
+{
+  "data_paths": {
+    "database_csv": "data/database/beauty_cosmetics_products2.csv",
+    "preprocessors_paths": {
+      "processed_dataframe": "data/preprocessors/processed_dataframe.csv",
+      "processed_X": "data/preprocessors/processed_X.pkl",
+      "processed_scaler": "data/preprocessors/processed_scaler.pkl"
+    },
+    "content_file": "static/content.json"
+  },
+  "data_params": {
+    "columns_to_load": {
+        "product_id_col": "ID",
+        "product_name_col": "Product_Name",
+        "brand_col": "Brand",
+        "category_col": "Category",
+        "price_col": "Price_USD",
+        "rating_col": "Rating"
+    },
+    "nrows_to_load": null
+  },
+  "model_paths": {
+    "autoencoder_file": "model/model_data/model.keras",
+    "embeddings": "model/model_data/embeddings.npy",
+    "normalized_embeddings": "model/model_data/embeddings_normed.npy",
+    "training_history": "model/model_data/training_history.json",
+    "training_history_plot": "model/model_data/training_history_plot.png"
+  },
+  "output_paths": {
+    "charts_dir": "outputs/plots/",
+    "logs_dir": "outputs/logs/",
+    "recommendations_dir": "outputs/recommendations/"
+  },
+  "number_of_recommendations": 20
+}

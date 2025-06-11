@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ store_name }}{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Laila:wght@400;500;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="header-container">
+            <div class="logo"><a href="{{ url_for('home') }}" class="nav-category-link">{{ logo_svg|safe }}</a></div>
+            <nav class="main-nav">
+                <ul>
+                    {# Safely determine the current category for navigation highlighting #}
+                    {% set current_category = category_name if category_name is defined else product.Category if product is defined else None %}
+                    {% for cat in categories %}
+                        <li><a href="{{ url_for('category_page', category_name=cat) }}" class="nav-category-link {{ 'active' if cat == current_category }}">{{ cat }}</a></li>
+                    {% endfor %}
+                </ul>
+            </nav>
+            <div class="header-cart" id="headerCartSummary" onclick="openCartModal()">
+                {# Safely access cart total from different contexts #}
+                <i class="fas fa-shopping-cart"></i>&nbsp; Cart ({{ (cart or initial_cart).total_items }})
+            </div>
+        </div>
+    </header>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        <div class="footer-container"><p>&copy; 2024 {{ store_name }} Inc. &middot; Privacy &middot; Terms &middot; Sitemap</p></div>
+    </footer>
+
+    {% include 'shared/cart_modal.html' %}
+    <div id="globalMessageContainer"></div>
+    <div id="confirmationModal" class="confirmation-modal-container"></div>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

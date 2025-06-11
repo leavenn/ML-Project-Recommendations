@@ -1,54 +1,61 @@
+import os
 import pandas as pd
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
+import joblib
+from sklearn.preprocessing import StandardScaler, LabelEncoder
 
-def load_and_preprocess_data(db_name="data/beauty_cosmetics_products.csv", test_size=0.2):
-    # Load the dataset from a CSV file
-    dataFrame = pd.read_csv(db_name)
+def load_and_preprocess_data(data_paths, data_params):
 
-    # Create a lightweight version of the DataFrame for display purposes
-    df_display = dataFrame[['Product_Name', 'Brand', 'Category', 'Price_USD', 'Rating']].copy()
+    # Jeżeli wszystkie pliki istnieją, wczytaj i zwróć je
+    if all(os.path.exists(p) for p in data_paths["preprocessors_paths"].values() if p):  # jeśli p nie jest None
+        dataFrame = pd.read_csv(data_paths["preprocessors_paths"]["processed_dataframe"])
+        dataFrame.reset_index(drop=True, inplace=True)
+        dataFrame["ID"] = dataFrame.index
+        X = joblib.load(data_paths["preprocessors_paths"]["processed_X"])
+        scaler = joblib.load(data_paths["preprocessors_paths"]["processed_scaler"])
+        return dataFrame, X, scaler
 
-    # Save category labels separately for future use (e.g., during recommendations)
-    index_to_category = df_display['Category'].values
+    # W przeciwnym razie – przetwórz dane od zera
+    # Wczytaj dane tylko z wybranych kolumn
+    columns_dict = data_params["columns_to_load"]
+    selected_cols = list(columns_dict.values())
 
-    # Convert 'Product_Size' from string like "100ml" to integer
-    dataFrame['Size_ml'] = dataFrame['Product_Size'].str.replace('ml', '').astype(int)
+    dataFrame = pd.read_csv(
+        data_paths['database_csv'],
+        usecols=selected_cols,
+        nrows=data_params.get("nrows_to_load", None)  # może być int lub None
+    )
 
-    # Drop the original 'Product_Size' column
-    dataFrame.drop(columns=['Product_Size'], inplace=True)
+    # Zakoduj kolumnę Brand
+    # Dane zamienia się z tekstowych na numeryczne, żeby model mógł je zrozumieć
+    brand_encoder = LabelEncoder()
+    encoded_brand_col = f'{data_params["columns_to_load"]["brand_col"]}_encoded'
+    dataFrame[encoded_brand_col] = brand_encoder.fit_transform(dataFrame[data_params["columns_to_load"]["brand_col"]])
 
-    # Map usage frequency from categorical to numeric values
-    freq_map = {'Occasional': 1, 'Monthly': 2, 'Weekly': 3, 'Daily': 4}
-    dataFrame['Usage_Num'] = dataFrame['Usage_Frequency'].map(freq_map)
+    # Zakoduj kolumnę Category
+    # Dane zamienia się z tekstowych na numeryczne, żeby model mógł je zrozumieć
+    category_encoder = LabelEncoder()
+    encoded_category_col = f'{data_params["columns_to_load"]["category_col"]}_encoded'
+    dataFrame[encoded_category_col] = category_encoder.fit_transform(dataFrame[data_params["columns_to_load"]["category_col"]])
 
-    # Drop the original 'Usage_Frequency' column
-    dataFrame.drop(columns=['Usage_Frequency'], inplace=True)
-
-    # List of categorical features to be one-hot encoded
-    categories = [
-        'Brand',
-        'Category',
-        'Skin_Type',
-        'Gender_Target',
-        'Packaging_Type',
-        'Main_Ingredient',
-        'Country_of_Origin'
-    ]
-
-    # Apply one-hot encoding to categorical columns, drop first level to avoid multicollinearity
-    dataFrame = pd.get_dummies(dataFrame, columns=categories, drop_first=True)
-
-    # Ensure 'Cruelty_Free' is of integer type (0 or 1)
-    dataFrame['Cruelty_Free'] = dataFrame['Cruelty_Free'].astype(int)
-
-    # Drop unused columns and extract the feature matrix X (without 'Product_Name' and 'Rating')
-    X = dataFrame.drop(columns=['Product_Name', 'Rating']).values
-
-    # Normalize all features using standard scaling (mean=0, std=1)
+    # Skaluj kolumny Price i Rating
     scaler = StandardScaler()
-    X_scaled = scaler.fit_transform(X)
+    scaled_cols = [f'{data_params["columns_to_load"]["price_col"]}_scaled', f'{data_params["columns_to_load"]["rating_col"]}_scaled']
+    dataFrame[scaled_cols] = scaler.fit_transform(
+        dataFrame[[data_params["columns_to_load"]["price_col"], data_params["columns_to_load"]["rating_col"]]]
+    )
 
-    # Return both versions of the data: for display and for modeling
-    return df_display, dataFrame, index_to_category, X_scaled, scaler
+    # Zbuduj macierz X
+    X = dataFrame[[encoded_brand_col, encoded_category_col] + scaled_cols].values
+
+    dataFrame = dataFrame.set_index('ID')
+
+    # Zapisz przetworzone dane
+    dataFrame.to_csv(data_paths["preprocessors_paths"]["processed_dataframe"], index=True)
+    joblib.dump(X, data_paths["preprocessors_paths"]["processed_X"])
+    joblib.dump(scaler, data_paths["preprocessors_paths"]["processed_scaler"])
+
+    # dataFrame to bazadanych po dodaniu i odjęciu dodatkowych kolumn
+    # X to macież przetworzonych danych które są uśrednione około 1 [1, 0.5, 0,25, 1] [-1, 05, 0.25, -1]
+    # scaler to pamięć tego jak są przeskalowane dane odchylenia, używa się go do nowych danych żeby były przeskalowane na np. liczby z przedziału 0-1 jak powyżej
+    return dataFrame, X, scaler
 

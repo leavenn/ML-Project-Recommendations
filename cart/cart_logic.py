@@ -1,63 +1,56 @@
-from collections import defaultdict
-
-def add_to_cart(product_name, cart_counts, dataFrame):
+def add_to_cart_by_id(product_id, quantity, cart_counts, dataFrame):
     """
-    Adds a product to the cart. If the product is already in the cart, increase its quantity.
-
-    Parameters:
-        product_name (str): Name of the product to add.
-        cart_counts (dict): Dictionary mapping product indices to quantities in the cart.
-        dataFrame (DataFrame): The full product data including product names.
+    Adds a product to the cart based on its ID and quantity.
+    This function was modified to accept a quantity parameter.
     """
-    # Find the index of the product by name
-    idx = dataFrame.index[dataFrame['Product_Name'] == product_name][0]
+    if product_id not in dataFrame.index:
+        print(f"❌ ID {product_id} does not exist in the database.")
+        return False
+    # Add the specified quantity to the cart
+    cart_counts[product_id] = cart_counts.get(product_id, 0) + quantity
+    return True
 
-    # Increment the quantity in the cart (or set to 1 if not present)
-    cart_counts[idx] = cart_counts.get(idx, 0) + 1
-
-def get_cart_category_weights(cart_counts, index_to_category):
+def remove_from_cart_by_id(product_id, cart_counts):
     """
-    Calculates normalized weights for each product category based on cart contents.
-
-    Parameters:
-        cart_counts (dict): Dictionary of cart contents (product index -> quantity).
-        index_to_category (array-like): Mapping from product index to category.
-
-    Returns:
-        dict: Mapping from category name to its relative weight in the cart.
+    Removes a product from the cart based on its ID.
+    This now removes the entire product line from the cart.
     """
-    category_counts = defaultdict(int)
-    total = 0
+    if product_id in cart_counts:
+        del cart_counts[product_id]
+        return True
+    else:
+        print(f"❌ Product with ID {product_id} is not in the cart.")
+        return False
 
-    # Count the total quantity per category
-    for idx, qty in cart_counts.items():
-        category = index_to_category[idx]
-        category_counts[category] += qty
-        total += qty
-
-    # Normalize by total quantity to get weights
-    return {k: v / total for k, v in category_counts.items()}
+def update_cart_item_quantity(product_id, quantity, cart_counts):
+    """
+    Updates the quantity of a specific item in the cart.
+    """
+    if product_id in cart_counts:
+        if quantity > 0:
+            cart_counts[product_id] = quantity
+            return True
+        else:
+            # If the new quantity is 0 or less, remove the item entirely.
+            del cart_counts[product_id]
+            return True
+    return False
 
 def print_cart(cart_counts, dataFrame):
     """
-    Prints the current contents of the cart in a nicely formatted way.
-
-    Parameters:
-        cart_counts (dict): Dictionary of cart contents (product index -> quantity).
-        dataFrame (DataFrame): The full product data including product names.
+    Prints the contents of the cart based on product IDs.
     """
     if not cart_counts:
-        print("\nYour cart is empty.\n")
+        print("\n🛒 Cart is empty.\n")
         return
-    
-    print("\n🛒 Your cart contains:")
+
+    print("\n🛒 Cart contents:")
     print("-" * 40)
     total_items = 0
     for i, (idx, qty) in enumerate(cart_counts.items(), start=1):
-        product_name = dataFrame.loc[idx, 'Product_Name']
-        print(f"{i:2}. {product_name:<30} x {qty}")
-        total_items += qty
+        if idx in dataFrame.index:
+            row = dataFrame.loc[idx]
+            print(f"{i:2}. {row['Product_Name']:<30} x {qty}")
+            total_items += qty
     print("-" * 40)
     print(f"Total items in cart: {total_items}\n")
-
-

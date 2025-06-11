@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}Shopping Bag | {{ store_name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="basket-header"><h2>My Shopping Bag ({{ cart.total_items }} Items)</h2></div>
+    {% if cart.cart_items %}
+    <div class="basket-layout">
+        <div class="order-summary-container">
+            <h3>Order summary</h3>
+            <table class="order-summary-table">
+                <thead><tr><th>Name</th><th>Price</th><th>Quantity</th><th>Total</th><th></th></tr></thead>
+                <tbody>
+                    {% for item in cart.cart_items %}
+                    <tr>
+                        <td class="product-cell">
+                            <img src="https://placehold.co/80x80/f7f2f0/666?text={{ item.category | urlencode }}" alt="{{ item.product_name }}">
+                            <div>
+                                <a href="{{ url_for('product_detail', product_id=item.id) }}" class="nav-category-link">{{ item.product_name }}</a>
+                                <span>Category: {{ item.category }}</span>
+                            </div>
+                        </td>
+                        <td>${{ "%.2f"|format(item.price_per_item) }}</td>
+                        <td>
+                            <div class="quantity-selector-table">
+                                <button onclick="updateTableQuantity('{{ item.id }}', '{{ item.quantity - 1 }}')">-</button>
+                                <input type="text" value="{{ item.quantity }}" readonly>
+                                <button onclick="updateTableQuantity('{{ item.id }}', '{{ item.quantity + 1 }}')">+</button>
+                            </div>
+                        </td>
+                        <td><strong>${{ "%.2f"|format(item.subtotal) }}</strong></td>
+                        <td><button class="remove-item-btn" onclick="confirmRemoveFromCart('{{ item.id }}')"><i class="fas fa-trash-alt"></i></button></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="summary-card-container">
+            <div class="summary-card">
+                <h3>Summary</h3>
+                <div class="summary-row"><span>Subtotal</span><span>${{ "%.2f"|format(cart.total_price) }}</span></div>
+                <div class="summary-row total-row"><span>Total</span><strong>${{ "%.2f"|format(cart.total_price) }}</strong></div>
+                <button class="primary-btn checkout-btn">Proceed to Payment</button>
+                <button class="reset-btn" onclick="confirmResetCart()" style="width: 100%; margin-top: 10px;">Clear Basket</button>
+            </div>
+        </div>
+    </div>
+    {% else %}
+        <div class="empty-basket-message">
+            <h3>Your shopping bag is empty.</h3>
+            <p>Looks like you haven't added anything to your bag yet.</p>
+            <a href="{{ url_for('home') }}" class="primary-btn nav-category-link">Continue Shopping</a>
+        </div>
+    {% endif %}
+    <section class="related-products-section">
+        <h2>Related products</h2>
+        <div class="product-grid">
+            {% if related_products %}
+                {% for p in related_products %}
+                <div class="product-card">
+                    <div class="product-image">
+                        <a href="{{ url_for('product_detail', product_id=p.ID) }}" class="nav-category-link"><img src="https://placehold.co/400x400/f7f2f0/666?text={{ p.Category | urlencode }}" alt="{{ p.Product_Name }}"></a>
+                        <button class="add-to-cart-icon" onclick="addToCartSimple('{{ p.ID }}')"><i class="fas fa-shopping-bag"></i></button>
+                    </div>
+                    <div class="product-info">
+                        <h3><a href="{{ url_for('product_detail', product_id=p.ID) }}" class="nav-category-link">{{ p.Product_Name }}</a></h3>
+                        <p class="product-brand">{{ p.Brand }}</p>
+                        <p class="product-category">{{ p.Category }}</p>
+                        <div class="product-rating"><i class="fas fa-star"></i> {{ p.Rating | round(1) }}</div>
+                        <p class="product-price">${{ "%.2f"|format(p.Price_USD) }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </section>
+</div>
+{% endblock %}
