@@ -6,10 +6,22 @@ from sklearn.preprocessing import StandardScaler, LabelEncoder
 def load_and_preprocess_data(data_paths, data_params):
 
     # Jeżeli wszystkie pliki istnieją, wczytaj i zwróć je
-    if all(os.path.exists(p) for p in data_paths["preprocessors_paths"].values() if p):  # jeśli p nie jest None
-        dataFrame = pd.read_csv(data_paths["preprocessors_paths"]["processed_dataframe"])
-        dataFrame.reset_index(drop=True, inplace=True)
-        dataFrame["ID"] = dataFrame.index
+    processed_df_path = data_paths["preprocessors_paths"]["processed_dataframe"]
+    cache_is_valid = False
+    if os.path.exists(processed_df_path):
+        try:
+            # Check if cached columns match the expected columns from config
+            cached_cols = pd.read_csv(processed_df_path, nrows=0).columns
+            expected_cols = data_params["columns_to_load"].values()
+            if set(expected_cols).issubset(set(cached_cols)):
+                cache_is_valid = True
+        except Exception:
+            pass # If cache is invalid for any reason, proceed to reprocess
+
+    if cache_is_valid and all(os.path.exists(p) for p in data_paths["preprocessors_paths"].values() if p):
+        dataFrame = pd.read_csv(processed_df_path, index_col='ID')
+        if 'ID' not in dataFrame.columns:
+            dataFrame['ID'] = dataFrame.index
         X = joblib.load(data_paths["preprocessors_paths"]["processed_X"])
         scaler = joblib.load(data_paths["preprocessors_paths"]["processed_scaler"])
         return dataFrame, X, scaler
@@ -57,5 +69,7 @@ def load_and_preprocess_data(data_paths, data_params):
     # dataFrame to bazadanych po dodaniu i odjęciu dodatkowych kolumn
     # X to macież przetworzonych danych które są uśrednione około 1 [1, 0.5, 0,25, 1] [-1, 05, 0.25, -1]
     # scaler to pamięć tego jak są przeskalowane dane odchylenia, używa się go do nowych danych żeby były przeskalowane na np. liczby z przedziału 0-1 jak powyżej
+    if 'ID' not in dataFrame.columns:
+        dataFrame['ID'] = dataFrame.index
+        
     return dataFrame, X, scaler
-

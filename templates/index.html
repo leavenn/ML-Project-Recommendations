@@ -1,8 +1,10 @@
-{% extends "base.html" %}
+<!-- This is the home page of the store. -->
+ {% extends "base.html" %}
 
 {% block title %}{{ store_name }} - Gift for your skin{% endblock %}
 
 {% block content %}
+<!-- Hero section to welcome users -->
 <section class="hero-section" style="background-image: url('https://placehold.co/1600x600/EBCDD2/333333?text={{ store_name | urlencode }}');">
     <div class="hero-content">
         <h1>Gift for your skin</h1>
@@ -11,6 +13,12 @@
     </div>
 </section>
 <div class="container">
+    {#
+       This is the core conditional logic for the home page.
+       1. If `page_data.recommendations` exists, it means the user has items in their cart
+          and we should display personalized recommendations.
+       2. If not, we fall back to displaying categorized products (top rated products in category).
+    #}
     {% if page_data.recommendations %}
     <section class="category-showcase">
         <h2>Recommended For You</h2>
@@ -33,6 +41,7 @@
         </div>
     </section>
     {% elif page_data.categorized_products %}
+    <!-- If no recommendations, loop through each category and its top products -->
         {% for category, products in page_data.categorized_products.items() %}
         <section class="category-showcase">
             <h2>{{ category }}</h2>
@@ -58,5 +67,6 @@
         {% endfor %}
     {% endif %}
 </div>
+<!-- A decorative banner -->
 <section class="promo-banner" style="background-image: url('https://placehold.co/1600x500/EBCDD2/333333?text=Find+Your+Glow');"></section>
 {% endblock %}

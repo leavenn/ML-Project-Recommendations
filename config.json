@@ -15,7 +15,8 @@
         "brand_col": "Brand",
         "category_col": "Category",
         "price_col": "Price_USD",
-        "rating_col": "Rating"
+        "rating_col": "Rating",
+        "reviews_col": "Number_of_Reviews"
     },
     "nrows_to_load": null
   },
