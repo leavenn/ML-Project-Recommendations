@@ -1,0 +1,34 @@
+<!-- This template defines the structure of the pop-up shopping cart modal. -->
+<!-- It's included in `base.html` so it can be opened from any page. -->
+<div id="cartModal" class="cart-modal-container">
+    <div class="cart-modal-content">
+        <button class="close-button" onclick="closeCartModal()">&times;</button>
+        <h2>Shopping Bag</h2>
+
+        <!-- A message that will be shown by JavaScript if the cart is empty -->
+        <div id="modalCartMessage" class="message info" style="display: none;">Your basket is empty.</div>
+
+        <!-- The body of the modal, which will contain the table of cart items -->
+        <div class="cart-modal-body">
+            <table id="modalCartTable">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Price</th>
+                        <th>Quantity</th>
+                        <th>Total</th>
+                        <th></th> </tr>
+                </thead>
+                <!-- The `<tbody>` is intentionally left empty. -->
+                <!-- JavaScript will dynamically populate it with the cart items. -->
+                <tbody>
+                    </tbody>
+            </table>
+        </div>
+        <!-- Action buttons at the bottom of the modal - clear the cart, view full basket -->
+        <div class="button-group modal-buttons">
+            <a href="{{ url_for('basket_page') }}" class="primary-btn">View full basket</a>
+            <button class="reset-btn" onclick="confirmResetCart()">Clear Basket</button>
+        </div>
+    </div>
+</div>

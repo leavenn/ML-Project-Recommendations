@@ -5,7 +5,8 @@
       "processed_dataframe": "data/preprocessors/processed_dataframe.csv",
       "processed_X": "data/preprocessors/processed_X.pkl",
       "processed_scaler": "data/preprocessors/processed_scaler.pkl"
-    }
+    },
+    "content_file": "static/content.json"
   },
   "data_params": {
     "columns_to_load": {
@@ -14,7 +15,8 @@
         "brand_col": "Brand",
         "category_col": "Category",
         "price_col": "Price_USD",
-        "rating_col": "Rating"
+        "rating_col": "Rating",
+        "reviews_col": "Number_of_Reviews"
     },
     "nrows_to_load": null
   },

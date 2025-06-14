@@ -1,0 +1,56 @@
+<!-- This template displays all products within a specific category. -->
+{% extends "base.html" %}
+
+{% block title %}{{ category_name }} | {{ store_name }}{% endblock %}
+
+{% block content %}
+<!-- A "hero" section at the top of the page with a background image and category description -->
+ <!-- Hero section - the area that immediately shows up on the screen under logo and menu -->
+<section class="category-hero-section" style="background-image: url('https://placehold.co/1600x500/EBCDD2/333333?text={{ category_name | urlencode }}');">
+    <div class="category-hero-content">
+        <h1>{{ category_name }}</h1>
+        <!-- Fetches the description from the dictionary passed from Flask - from the static/content.json -->
+         <!-- Key: category name, Value: description -->
+        <p>{{ category_descriptions.get(category_name, "Explore our finest selection of beauty products.") }}</p>
+    </div>
+</section>
+<div class="container">
+    <!-- Toolbar with sorting options for the product list -->
+    <div class="toolbar">
+        <div class="sort-form">
+            <select id="sortSelect" name="sort">
+                {% if cart.total_items > 0 %}<option value="recommended" {% if current_sort == 'recommended' %}selected{% endif %}>Recommended</option>{% endif %}
+                <option value="rating" {% if current_sort == 'rating' %}selected{% endif %}>Highest Rating</option>
+                <option value="price_asc" {% if current_sort == 'price_asc' %}selected{% endif %}>Price: Low to High</option>
+                <option value="price_desc" {% if current_sort == 'price_desc' %}selected{% endif %}>Price: High to Low</option>
+            </select>
+        </div>
+    </div>
+    <!-- Display the grid of products -->
+    {% if products %}
+        <div class="product-grid">
+            <!-- Loop through the sorted list of products passed from the Flask route -->
+            {% for p in products %}
+            <div class="product-card">
+                <div class="product-image">
+                    <a href="{{ url_for('product_detail', product_id=p.ID) }}" class="nav-category-link"><img src="https://placehold.co/400x400/f7f2f0/666?text={{ p.Category | urlencode }}" alt="{{ p.Product_Name }}"></a>
+                    <!-- Display a "Bestseller" tag if the product is marked as such -->
+                    {% if p.is_bestseller %}<div class="product-tag">Bestseller</div>{% endif %}
+                    <button class="add-to-cart-icon" onclick="addToCartSimple('{{ p.ID }}')"><i class="fas fa-shopping-bag"></i></button>
+                </div>
+                <div class="product-info">
+                    <h3><a href="{{ url_for('product_detail', product_id=p.ID) }}" class="nav-category-link">{{ p.Product_Name }}</a></h3>
+                    <p class="product-brand">{{ p.Brand }}</p>
+                    <p class="product-category">{{ p.Category }}</p>
+                    <div class="product-rating"><i class="fas fa-star"></i> {{ p.Rating | round(1) }}</div>
+                    <p class="product-price">${{ "%.2f"|format(p.Price_USD) }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+    <!-- Message shown if no products match the current criteria (e.g., in an empty category) -->
+        <div class="message info" style="text-align:center;">No products found for this criteria.</div>
+    {% endif %}
+</div>
+{% endblock %}

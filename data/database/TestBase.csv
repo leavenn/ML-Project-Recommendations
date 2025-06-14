@@ -1,49 +1,49 @@
-Product_Name,Brand,Category,Usage_Frequency,Price_USD,Rating,Number_of_Reviews,Product_Size,Skin_Type,Gender_Target,Packaging_Type,Main_Ingredient,Cruelty_Free,Country_of_Origin
-Ultra Speaker,SoundWave,Electronics,Daily,129.99,4.5,1523,100ml,All,Unisex,Box,Plastic,False,China
-4K Monitor,VisionPro,Electronics,Weekly,299.50,4.2,2341,150ml,All,Unisex,Box,LED,False,South Korea
-Wireless Mouse,ClickTech,Electronics,Daily,24.75,4.7,842,50ml,All,Unisex,Blister,Plastic,False,Mexico
-Gaming Laptop,GamerX,Electronics,Occasional,1499.00,3.9,421,200ml,All,Male,Box,Aluminum,False,USA
-Noise Cancelling Headphones,QuietSounds,Electronics,Daily,199.99,4.8,3121,120ml,All,Unisex,Box,Memory Foam,False,Germany
-Smartphone,NextGen,Electronics,Daily,999.00,4.3,5270,80ml,All,Unisex,Box,Glass,False,China
-Bluetooth Speaker,BeatBox,Electronics,Weekly,59.99,4.1,764,60ml,All,Unisex,Box,Metal,False,Japan
-Action Camera,AdvenCam,Electronics,Occasional,349.90,4.6,214,90ml,All,Unisex,Box,Aluminum,False,USA
-Smartwatch,TimeTec,Electronics,Daily,249.99,4.0,1890,70ml,All,Unisex,Box,Stainless Steel,False,Switzerland
-Portable Charger,PowerUp,Electronics,Monthly,39.99,4.4,980,110ml,All,Unisex,Box,Lithium,False,South Korea
-Coffee Maker,CasaBrew,Home,Daily,89.50,4.2,653,100ml,All,Unisex,Box,Steel,False,Italy
-Vacuum Cleaner,HomeClean,Home,Weekly,129.99,3.8,432,200ml,All,Unisex,Box,Plastic,False,USA
-Air Purifier,FreshAir,Home,Monthly,199.00,4.5,1187,150ml,All,Unisex,Box,HEPA,False,Germany
-Electric Kettle,QuickBoil,Home,Daily,29.99,4.7,2345,80ml,All,Unisex,Box,Stainless Steel,False,China
-Robot Vacuum,AutoSweep,Home,Weekly,249.99,4.1,978,180ml,All,Unisex,Box,Plastic,False,Japan
-Blender,BlendIt,Home,Occasional,59.99,4.3,875,130ml,All,Unisex,Box,Glass,False,France
-Smart Thermostat,HeatSmart,Home,Monthly,149.99,4.0,645,90ml,All,Unisex,Box,Silicon,False,USA
-Electric Drill,ToolMax,Home,Monthly,79.90,3.9,312,70ml,All,Unisex,Box,Steel,False,China
-LED Desk Lamp,LightBright,Home,Daily,22.50,4.6,1402,60ml,All,Unisex,Box,Aluminum,False,Sweden
-Bread Maker,DailyBake,Home,Weekly,79.99,4.2,456,120ml,All,Unisex,Box,Steel,False,China
-Garden Hose,WaterFlow,Garden,Weekly,34.99,4.2,532,100ml,All,Unisex,Coil,Rubber,False,Germany
-Lawn Mower,GreenCut,Garden,Occasional,299.99,3.7,214,200ml,All,Unisex,Box,Steel,False,USA
-Garden Shears,CutRight,Garden,Monthly,19.99,4.5,876,50ml,All,Unisex,Blister,Steel,False,China
-Plant Pot,TerraDecor,Garden,Occasional,12.50,4.8,340,80ml,All,Unisex,Box,Clay,True,Mexico
-Outdoor Grill,BBQKing,Garden,Monthly,199.99,4.1,432,250ml,All,Unisex,Box,Steel,False,USA
-Solar Light,SunGlow,Garden,Monthly,24.99,4.4,765,70ml,All,Unisex,Blister,Plastic,True,China
-Garden Gloves,HandSafe,Garden,Weekly,9.99,4.6,651,40ml,All,Unisex,Pack,Rubber,True,India
-Garden Table,PatioLive,Garden,Occasional,149.99,4.0,214,180ml,All,Unisex,Box,Wood,False,Sweden
-Tomato Seeds,SeedGrow,Garden,Occasional,3.99,4.7,98,30ml,All,Unisex,Packet,Organic,True,Netherlands
-Herb Kit,SpiceGarden,Garden,Occasional,14.99,4.3,210,60ml,All,Unisex,Box,Herbs,True,Netherlands
-Fruit Basket,FreshPick,Food,Occasional,24.99,4.7,210,150ml,All,Unisex,Box,Mixed Fruit,True,Turkey
-Chocolate Bar,SweetTreats,Food,Weekly,2.50,4.8,4321,50ml,All,Unisex,Bar,Cocoa,True,Switzerland
-Organic Almonds,NutriNuts,Food,Monthly,12.99,4.3,876,80ml,All,Unisex,Bag,Nuts,True,USA
-Instant Noodles,NoodleExpress,Food,Daily,0.99,4.0,15000,40ml,All,Unisex,Packet,Wheat,False,China
-Olive Oil,PurePress,Food,Monthly,15.99,4.6,543,100ml,All,Unisex,Bottle,Olives,True,Spain
-Granola Mix,SunnyBreakfast,Food,Weekly,6.50,4.2,764,120ml,All,Unisex,Box,Oats,True,Canada
-Protein Bar,FitFuel,Food,Daily,2.99,4.1,980,60ml,All,Unisex,Wrapper,Whey,False,USA
-Spicy Salsa,HotFlavors,Food,Occasional,4.49,4.5,310,90ml,All,Unisex,Jar,Tomato,True,Mexico
-Gourmet Coffee,BrewMaster,Food,Daily,9.99,4.7,2345,200ml,All,Unisex,Bag,Coffee Beans,False,Brazil
-Green Tea,ZenLeaf,Food,Monthly,5.99,4.4,765,70ml,All,Unisex,Box,Tea Leaves,True,Japan
-Frozen Pizza,QuickBake,Food,Weekly,7.99,3.9,4321,280ml,All,Unisex,Box,Cheese,False,Italy
-Snack Pack,Munchies,Food,Daily,3.49,4.1,3412,60ml,All,Unisex,Pack,Assorted,False,USA
-Pet Water Fountain,PawFlow,Home,Daily,34.50,4.6,432,110ml,All,Unisex,Box,Plastic,False,China
-Air Fryer,CrispyBite,Home,Weekly,99.99,4.5,1321,150ml,All,Unisex,Box,Steel,False,USA
-Wireless Charger,QuickCharge,Electronics,Daily,29.99,4.3,892,50ml,All,Unisex,Box,Plastic,False,South Korea
-Espresso Machine,CaffeinePro,Home,Daily,249.99,4.8,765,180ml,All,Unisex,Box,Aluminum,False,Italy
-Soundbar,HomeCinema,Electronics,Weekly,199.99,4.0,321,120ml,All,Unisex,Box,Plastic,False,USA
-Seedling Starter,PlantGrow,Garden,Occasional,8.99,4.5,98,70ml,All,Unisex,Tray,Soil,True,Netherlands
+Product_Name,Brand,Category,Usage_Frequency,Price_USD,Rating,Number_of_Reviews,Product_Size,Skin_Type,Gender_Target,Packaging_Type,Main_Ingredient,Cruelty_Free,Country_of_Origin,ID
+Ultra Speaker,SoundWave,Electronics,Daily,129.99,4.5,1523,100ml,All,Unisex,Box,Plastic,False,China,1
+4K Monitor,VisionPro,Electronics,Weekly,299.50,4.2,2341,150ml,All,Unisex,Box,LED,False,South Korea,2
+Wireless Mouse,ClickTech,Electronics,Daily,24.75,4.7,842,50ml,All,Unisex,Blister,Plastic,False,Mexico,3
+Gaming Laptop,GamerX,Electronics,Occasional,1499.00,3.9,421,200ml,All,Male,Box,Aluminum,False,USA,4
+Noise Cancelling Headphones,QuietSounds,Electronics,Daily,199.99,4.8,3121,120ml,All,Unisex,Box,Memory Foam,False,Germany,5
+Smartphone,NextGen,Electronics,Daily,999.00,4.3,5270,80ml,All,Unisex,Box,Glass,False,China,6
+Bluetooth Speaker,BeatBox,Electronics,Weekly,59.99,4.1,764,60ml,All,Unisex,Box,Metal,False,Japan,7
+Action Camera,AdvenCam,Electronics,Occasional,349.90,4.6,214,90ml,All,Unisex,Box,Aluminum,False,USA,8
+Smartwatch,TimeTec,Electronics,Daily,249.99,4.0,1890,70ml,All,Unisex,Box,Stainless Steel,False,Switzerland,9
+Portable Charger,PowerUp,Electronics,Monthly,39.99,4.4,980,110ml,All,Unisex,Box,Lithium,False,South Korea,10
+Coffee Maker,CasaBrew,Home,Daily,89.50,4.2,653,100ml,All,Unisex,Box,Steel,False,Italy,11
+Vacuum Cleaner,HomeClean,Home,Weekly,129.99,3.8,432,200ml,All,Unisex,Box,Plastic,False,USA,12
+Air Purifier,FreshAir,Home,Monthly,199.00,4.5,1187,150ml,All,Unisex,Box,HEPA,False,Germany,13
+Electric Kettle,QuickBoil,Home,Daily,29.99,4.7,2345,80ml,All,Unisex,Box,Stainless Steel,False,China,14
+Robot Vacuum,AutoSweep,Home,Weekly,249.99,4.1,978,180ml,All,Unisex,Box,Plastic,False,Japan,15
+Blender,BlendIt,Home,Occasional,59.99,4.3,875,130ml,All,Unisex,Box,Glass,False,France,16
+Smart Thermostat,HeatSmart,Home,Monthly,149.99,4.0,645,90ml,All,Unisex,Box,Silicon,False,USA,17
+Electric Drill,ToolMax,Home,Monthly,79.90,3.9,312,70ml,All,Unisex,Box,Steel,False,China,18
+LED Desk Lamp,LightBright,Home,Daily,22.50,4.6,1402,60ml,All,Unisex,Box,Aluminum,False,Sweden,19
+Bread Maker,DailyBake,Home,Weekly,79.99,4.2,456,120ml,All,Unisex,Box,Steel,False,China,20
+Garden Hose,WaterFlow,Garden,Weekly,34.99,4.2,532,100ml,All,Unisex,Coil,Rubber,False,Germany,21
+Lawn Mower,GreenCut,Garden,Occasional,299.99,3.7,214,200ml,All,Unisex,Box,Steel,False,USA,22
+Garden Shears,CutRight,Garden,Monthly,19.99,4.5,876,50ml,All,Unisex,Blister,Steel,False,China,23
+Plant Pot,TerraDecor,Garden,Occasional,12.50,4.8,340,80ml,All,Unisex,Box,Clay,True,Mexico,24
+Outdoor Grill,BBQKing,Garden,Monthly,199.99,4.1,432,250ml,All,Unisex,Box,Steel,False,USA,25
+Solar Light,SunGlow,Garden,Monthly,24.99,4.4,765,70ml,All,Unisex,Blister,Plastic,True,China,26
+Garden Gloves,HandSafe,Garden,Weekly,9.99,4.6,651,40ml,All,Unisex,Pack,Rubber,True,India,27
+Garden Table,PatioLive,Garden,Occasional,149.99,4.0,214,180ml,All,Unisex,Box,Wood,False,Sweden,28
+Tomato Seeds,SeedGrow,Garden,Occasional,3.99,4.7,98,30ml,All,Unisex,Packet,Organic,True,Netherlands,29
+Herb Kit,SpiceGarden,Garden,Occasional,14.99,4.3,210,60ml,All,Unisex,Box,Herbs,True,Netherlands,30
+Fruit Basket,FreshPick,Food,Occasional,24.99,4.7,210,150ml,All,Unisex,Box,Mixed Fruit,True,Turkey,31
+Chocolate Bar,SweetTreats,Food,Weekly,2.50,4.8,4321,50ml,All,Unisex,Bar,Cocoa,True,Switzerland,32
+Organic Almonds,NutriNuts,Food,Monthly,12.99,4.3,876,80ml,All,Unisex,Bag,Nuts,True,USA,33
+Instant Noodles,NoodleExpress,Food,Daily,0.99,4.0,15000,40ml,All,Unisex,Packet,Wheat,False,China,34
+Olive Oil,PurePress,Food,Monthly,15.99,4.6,543,100ml,All,Unisex,Bottle,Olives,True,Spain,35
+Granola Mix,SunnyBreakfast,Food,Weekly,6.50,4.2,764,120ml,All,Unisex,Box,Oats,True,Canada,36
+Protein Bar,FitFuel,Food,Daily,2.99,4.1,980,60ml,All,Unisex,Wrapper,Whey,False,USA,37
+Spicy Salsa,HotFlavors,Food,Occasional,4.49,4.5,310,90ml,All,Unisex,Jar,Tomato,True,Mexico,38
+Gourmet Coffee,BrewMaster,Food,Daily,9.99,4.7,2345,200ml,All,Unisex,Bag,Coffee Beans,False,Brazil,39
+Green Tea,ZenLeaf,Food,Monthly,5.99,4.4,765,70ml,All,Unisex,Box,Tea Leaves,True,Japan,40
+Frozen Pizza,QuickBake,Food,Weekly,7.99,3.9,4321,280ml,All,Unisex,Box,Cheese,False,Italy,41
+Snack Pack,Munchies,Food,Daily,3.49,4.1,3412,60ml,All,Unisex,Pack,Assorted,False,USA,42
+Pet Water Fountain,PawFlow,Home,Daily,34.50,4.6,432,110ml,All,Unisex,Box,Plastic,False,China,43
+Air Fryer,CrispyBite,Home,Weekly,99.99,4.5,1321,150ml,All,Unisex,Box,Steel,False,USA,44
+Wireless Charger,QuickCharge,Electronics,Daily,29.99,4.3,892,50ml,All,Unisex,Box,Plastic,False,South Korea,45
+Espresso Machine,CaffeinePro,Home,Daily,249.99,4.8,765,180ml,All,Unisex,Box,Aluminum,False,Italy,46
+Soundbar,HomeCinema,Electronics,Weekly,199.99,4.0,321,120ml,All,Unisex,Box,Plastic,False,USA,47
+Seedling Starter,PlantGrow,Garden,Occasional,8.99,4.5,98,70ml,All,Unisex,Tray,Soil,True,Netherlands,48

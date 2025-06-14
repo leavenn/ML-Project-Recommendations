@@ -42,7 +42,7 @@ data/*.xlsx
 *.jpeg
 *.gif
 *.bmp
-*.svg
+
 
 # Kompilacje C/C++
 *.out

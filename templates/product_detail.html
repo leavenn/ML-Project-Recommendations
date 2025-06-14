@@ -1,0 +1,92 @@
+<!-- This template displays detailed information about a single product. -->
+{% extends "base.html" %}
+
+{% block title %}{{ product.Product_Name }} | {{ store_name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumbs for easy navigation back to the category or home page -->
+    <div class="breadcrumbs">
+        <a href="{{ url_for('home') }}" class="nav-category-link">Home</a> &gt; 
+        <a href="{{ url_for('category_page', category_name=product.Category) }}" class="nav-category-link">{{ product.Category }}</a> &gt; 
+        <span>{{ product.Product_Name }}</span>
+    </div>
+    <div class="product-detail-layout">
+        <!-- A column for thumbnail images -->
+        <div class="product-thumbnails">
+            {% for i in range(1, 5) %}
+            <img src="https://placehold.co/100x100/f7f2f0/666?text={{ product.Category | urlencode }}" alt="Thumbnail {{i}}" class="{{ 'active' if i == 1 }}" onclick="changeMainImage(this)">
+            {% endfor %}
+        </div>
+        <!-- The main, larger product image -->
+        <div class="main-product-image">
+            <img id="mainImage" src="https://placehold.co/600x600/f7f2f0/666?text={{ product.Product_Name | urlencode }}" alt="{{ product.Product_Name }}">
+            <div class="product-tag">Bestseller</div>
+        </div>
+        <!-- Column for all product information and actions -->
+        <div class="product-info-column">
+            <h1>{{ product.Product_Name }}</h1>
+            <p class="product-short-desc">{{ product.Brand }}</p>
+            <div class="product-price-detailed">
+                <span>${{ "%.2f"|format(product.Price_USD) }}</span>
+            </div>
+            <!-- Dynamic star rating display -->
+            <div class="product-reviews-summary">
+                <div class="stars">
+                    {# 
+                       This logic calculates how many full, half, and empty stars to show
+                       based on the product's numerical rating.
+                    #}
+                    {% set rating = product.Rating | float %}
+                    {% set full_stars = rating | int %}
+                    {% set half_star = true if (rating - full_stars) >= 0.5 else false %}
+                    {% set empty_stars = 5 - full_stars - (1 if half_star else 0) %}
+
+                    {% for i in range(full_stars) %}<i class="fas fa-star"></i>{% endfor %}
+                    {% if half_star %}<i class="fas fa-star-half-alt"></i>{% endif %}
+                    {% for i in range(empty_stars) %}<i class="far fa-star"></i>{% endfor %}
+                </div>
+                <span>{{ "%.1f"|format(rating) }}</span><span>&middot;</span><span>{{ product.Number_of_Reviews }} reviews</span>
+            </div>
+            <p class="product-main-desc">In ullamco labore mollit et exercitation fugiat exercitation minim ex sint. Ullamco exercitation amet officia mollit. Qui cillum pariatur in con.</p>
+            <div class="shipping-perks">
+                <p><i class="fas fa-check-circle"></i> Free shipping on orders over $49 USD</p>
+                <p><i class="fas fa-check-circle"></i> Free & easy returns</p>
+            </div>
+            <!-- Quantity selector for choosing how many to add to the bag -->
+            <div class="option-group">
+                <label for="quantity">Quantity</label>
+                <div class="quantity-selector">
+                    <button onclick="changeQuantity(-1)">-</button>
+                    <input type="text" id="quantity" value="1" readonly>
+                    <button onclick="changeQuantity(1)">+</button>
+                </div>
+            </div>
+            <button class="primary-btn add-to-bag-btn" onclick="addToCartFromDetail('{{ product.ID }}')"><i class="fas fa-shopping-bag"></i> Add to Bag</button>
+        </div>
+    </div>
+    <!-- Section for related products -->
+    <section class="related-products-section">
+        <h2>Related products</h2>
+        <div class="product-grid">
+            {% if related_products %}
+                {% for p in related_products %}
+                <div class="product-card">
+                    <div class="product-image">
+                        <a href="{{ url_for('product_detail', product_id=p.ID) }}" class="nav-category-link"><img src="https://placehold.co/400x400/f7f2f0/666?text={{ p.Category | urlencode }}" alt="{{ p.Product_Name }}"></a>
+                        <button class="add-to-cart-icon" onclick="addToCartSimple('{{ p.ID }}')"><i class="fas fa-shopping-bag"></i></button>
+                    </div>
+                    <div class="product-info">
+                        <h3><a href="{{ url_for('product_detail', product_id=p.ID) }}" class="nav-category-link">{{ p.Product_Name }}</a></h3>
+                        <p class="product-brand">{{ p.Brand }}</p>
+                        <p class="product-category">{{ p.Category }}</p>
+                        <div class="product-rating"><i class="fas fa-star"></i> {{ p.Rating | round(1) }}</div>
+                        <p class="product-price">${{ "%.2f"|format(p.Price_USD) }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </section>
+</div>
+{% endblock %}
