@@ -1,6 +1,6 @@
 {
   "data_paths": {
-    "database_csv": "data/database/beauty_cosmetics_products2.csv",
+    "database_csv": "data/database/products.csv",
     "preprocessors_paths": {
       "processed_dataframe": "data/preprocessors/processed_dataframe.csv",
       "processed_X": "data/preprocessors/processed_X.pkl",
